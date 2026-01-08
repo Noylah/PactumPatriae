@@ -22,7 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(ipData => {
                     const userIP = ipData.ip;
                     
-                    const messaggio = `📢 *NUOVA RICHIESTA AFFILIAZIONE*\n━━━━━━━━━━━━━━━━━━\n👤 *Nickname:* ${nickname}\n📱 *Telegram:* ${telegram}\n🌐 *IP:* ${userIP}\n━━━━━━━━━━━━━━━━━━`;
+                    const messaggio = `🦅 *Pactum Patriae*
+__Richiesta di Affiliazione tramite Sito__
+
+• 👤 *Username*: ${nickname}
+• 💬 *Telegram*: ${telegram}
+• 🌐 *IP*: \`${userIP}\``;
 
                     submitBtn.innerText = "Invio in corso...";
 
