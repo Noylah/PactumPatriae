@@ -12,9 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
             let telegram = document.getElementById('telegram').value;
             const submitBtn = this.querySelector('button');
 
+            const escapeMarkdown = (text) => text.replace(/[_*`[\]()]/g, '\\$&');
+
             if (telegram && !telegram.startsWith('@')) {
                 telegram = '@' + telegram;
             }
+
+            const cleanNickname = escapeMarkdown(nickname);
+            const cleanTelegram = escapeMarkdown(telegram);
 
             submitBtn.disabled = true;
             submitBtn.innerText = "Recupero IP...";
@@ -23,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(res => res.json())
                 .then(ipData => {
                     const userIP = ipData.ip;
-                    const messaggio = `🦅 *Pactum Patriae*\n__Richiesta di Affiliazione tramite Sito__\n\n• 👤 *Username*: ${nickname}\n• 💬 *Telegram*: ${telegram}\n• 🌐 *IP*: \`${userIP}\``;
+                    const messaggio = `🦅 *Pactum Patriae*\n__Richiesta di Affiliazione tramite Sito__\n\n• 👤 *Username*: ${cleanNickname}\n• 💬 *Telegram*: ${cleanTelegram}\n• 🌐 *IP*: \`${userIP}\``;
 
                     submitBtn.innerText = "Invio in corso...";
 
