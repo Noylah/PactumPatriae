@@ -673,6 +673,60 @@ body {
     border-color: var(--gold);
     background-color: var(--white);
 }
+/* Footer Coerente e Moderno */
+.main-footer {
+    background-color: #0a0a0a; /* Nero profondo per coerenza */
+    color: #e0e0e0;
+    padding: 60px 20px 30px;
+    text-align: center;
+    border-top: 1px solid rgba(212, 175, 55, 0.3); /* Linea dorata sottile e sfumata */
+    margin-top: 80px;
+    font-family: 'Crimson Pro', serif;
+}
+
+.footer-credits {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+.noyla-link {
+    color: #d4af37; /* Colore Oro */
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid transparent;
+}
+
+.noyla-link:hover {
+    color: #fff;
+    text-shadow: 0 0 8px #d4af37;
+    border-bottom: 1px solid #d4af37;
+}
+
+.footer-disclaimer-box {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03); /* Un tocco di trasparenza per staccare dal fondo */
+    border-radius: 8px;
+}
+
+.footer-disclaimer-box p {
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.gdr-warning {
+    color: #d4af37;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 10px;
+}
 
 @media (max-width: 600px) {
     .affiliati-header h2 {
