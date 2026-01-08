@@ -8,30 +8,25 @@ document.addEventListener('DOMContentLoaded', () => {
         formAffiliati.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const nickname = document.getElementById('nickname').value;
-            const telegram = document.getElementById('telegram').value;
+            let nickname = document.getElementById('nickname').value;
+            let telegram = document.getElementById('telegram').value;
             const submitBtn = this.querySelector('button');
 
-            // Feedback immediato
+            if (telegram && !telegram.startsWith('@')) {
+                telegram = '@' + telegram;
+            }
+
             submitBtn.disabled = true;
             submitBtn.innerText = "Recupero IP...";
 
-            // 1. Recupero l'IP
             fetch('https://api.ipify.org?format=json')
                 .then(res => res.json())
                 .then(ipData => {
                     const userIP = ipData.ip;
-                    
-                    const messaggio = `🦅 *Pactum Patriae*
-__Richiesta di Affiliazione tramite Sito__
-
-• 👤 *Username*: ${nickname}
-• 💬 *Telegram*: ${telegram}
-• 🌐 *IP*: \`${userIP}\``;
+                    const messaggio = `🦅 *Pactum Patriae*\n__Richiesta di Affiliazione tramite Sito__\n\n• 👤 *Username*: ${nickname}\n• 💬 *Telegram*: ${telegram}\n• 🌐 *IP*: \`${userIP}\``;
 
                     submitBtn.innerText = "Invio in corso...";
 
-                    // 2. Invio a Telegram (dentro la promessa dell'IP)
                     return fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -48,7 +43,7 @@ __Richiesta di Affiliazione tramite Sito__
                         formBox.innerHTML = `
                             <div style="text-align:center; padding: 20px;">
                                 <h3 style="color:var(--blue);">Richiesta Inviata!</h3>
-                                <p>I dati (incluso l'IP) sono stati inviati al gruppo.</p>
+                                <p>I dati sono stati inviati con successo.</p>
                             </div>`;
                     } else if (response) {
                         return response.json().then(data => {
@@ -59,8 +54,8 @@ __Richiesta di Affiliazione tramite Sito__
                     }
                 })
                 .catch(error => {
-                    console.error('Errore:', error);
-                    alert("Errore durante l'operazione. Verifica la connessione.");
+                    console.error(error);
+                    alert("Errore durante l'operazione.");
                     submitBtn.disabled = false;
                     submitBtn.innerText = "Invia Richiesta";
                 });
