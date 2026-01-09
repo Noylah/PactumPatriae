@@ -498,6 +498,21 @@ body {
     color: #ffffff;
 }
 
+.coords-badge {
+    display: inline-block;
+    border: 1px solid var(--gold);
+    padding: 8px 24px;
+    border-radius: 100px;
+    color: #ffffff;
+    font-family: 'Public Sans', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
 .lore-section {
     padding: 100px 20px;
     background-color: var(--white);
