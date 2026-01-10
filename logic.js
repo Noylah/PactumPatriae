@@ -45,11 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => {
                     if (response && response.ok) {
                         const formBox = document.querySelector('.affiliati-form-box');
-                        formBox.innerHTML = `
-                            <div style="text-align:center; padding: 20px;">
-                                <h3 style="color:var(--blue);">Richiesta Inviata!</h3>
-                                <p>I dati sono stati inviati con successo.</p>
-                            </div>`;
+                        formBox.innerHTML = `<div class="success-message-container">
+    <div class="success-card">
+        <div class="success-icon">✓</div>
+        <h3>Richiesta Inviata!</h3>
+        <p>I dati sono stati inviati con successo.</p>
+    </div>
+</div>`;
                     } else if (response) {
                         return response.json().then(data => {
                             alert("Errore Telegram: " + data.description);
