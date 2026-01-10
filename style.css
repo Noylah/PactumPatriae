@@ -249,19 +249,22 @@ body {
 }
 
 .news-section {
-    padding: 80px 40px;
-    background-color: var(--white);
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
+    padding: 100px 20px;
+    background-image: linear-gradient(rgba(16, 68, 105, 0.9), rgba(0, 0, 0, 0.8)), url('img/news-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    width: 100%;
 }
 
 .news-section h2 {
     font-family: 'Crimson Pro', serif;
-    font-size: 2.8rem;
-    color: var(--blue);
+    font-size: 3rem;
+    color: var(--white);
     margin-bottom: 50px;
     position: relative;
+    text-align: center;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
 .news-grid {
@@ -269,33 +272,34 @@ body {
     flex-wrap: wrap;
     gap: 30px;
     justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .news-card {
     flex: 1 1 350px;
     max-width: 380px;
-    background: var(--white);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    transition: transform 0.3s ease;
-    border: 1px solid rgba(0,0,0,0.05);
-    border-bottom: 4px solid var(--gold);
-}
-
-[data-theme="dark"] .news-card {
-    border: 1px solid #333;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-bottom: 4px solid var(--gold);
 }
 
 .news-card:hover {
     transform: translateY(-10px);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 45px rgba(0,0,0,0.4);
 }
 
 .news-placeholder {
     width: 100%;
     height: 200px;
-    background-color: #104469;
+    background-color: rgba(16, 68, 105, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -305,6 +309,7 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 2px;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.3);
 }
 
 .news-info {
@@ -313,21 +318,21 @@ body {
 }
 
 .news-info h3 {
-    font-size: 1.3rem;
-    color: var(--blue);
+    font-size: 1.4rem;
+    color: var(--gold);
     margin-bottom: 12px;
+    font-family: 'Crimson Pro', serif;
 }
 
 .news-info p {
     font-size: 0.95rem;
-    color: var(--text);
+    color: var(--white);
     opacity: 0.8;
     line-height: 1.6;
 }
 
 .members-section {
     padding: 100px 20px;
-    /* AGGIUNTO SFONDO IMMERSIVO */
     background-image: linear-gradient(rgba(16, 68, 105, 0.85), rgba(0, 0, 0, 0.8)), url('img/ufficio.jpg');
     background-size: cover;
     background-position: center;
@@ -343,7 +348,7 @@ body {
 .section-title {
     font-family: 'Crimson Pro', serif;
     font-size: 3rem;
-    color: var(--white); /* Bianco per contrasto */
+    color: var(--white); 
     text-align: center;
     margin-bottom: 60px;
     text-shadow: 0 4px 15px rgba(0,0,0,0.3);
@@ -354,7 +359,6 @@ body {
     align-items: center;
     gap: 50px;
     margin-bottom: 80px;
-    /* EFFETTO VETRO SULLA RIGA */
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -526,96 +530,24 @@ body {
 .hero-sede {
     height: 100vh;
     width: 100%;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), url('img/sede-principale.png');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(16, 68, 105, 0.7)), url('img/sede-principale.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
     color: #ffffff;
 }
 
-.coords-badge {
-    display: inline-block;
-    border: 1px solid var(--gold);
-    padding: 8px 24px;
-    border-radius: 100px;
-    color: #ffffff;
-    font-family: 'Public Sans', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: 2px;
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(5px);
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.lore-section {
-    padding: 100px 20px;
-    background-color: var(--white);
-}
-
-.lore-container {
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.lore-container h2 {
-    font-family: 'Crimson Pro', serif;
-    font-size: 2.8rem;
-    color: var(--blue);
-    margin-bottom: 30px;
-}
-
-.lore-container p {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: var(--text);
-    opacity: 0.9;
-    margin-bottom: 20px;
-}
-
-.gallery-section {
-    padding-bottom: 100px;
-    padding-left: 20px;
-    padding-right: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.gallery-item {
-    height: 250px;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 2px solid var(--gold);
-}
-
-.gallery-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.gallery-item:hover img {
-    transform: scale(1.1);
-}
-
 .hero-sede h1 {
     font-family: 'Crimson Pro', serif;
-    font-size: 4rem;
+    font-size: 4.5rem;
     line-height: 1.1;
     margin-bottom: 20px;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    text-shadow: 0 4px 25px rgba(0,0,0,0.5);
 }
 
 .hero-sede p {
@@ -625,6 +557,137 @@ body {
     max-width: 700px;
     margin: 0 auto 40px;
     font-weight: 300;
+}
+
+.coords-badge {
+    display: inline-block;
+    border: 1px solid var(--gold);
+    padding: 10px 30px;
+    border-radius: 100px;
+    color: var(--gold);
+    font-family: 'Public Sans', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.lore-section {
+    padding: 100px 20px 50px;
+    background-image: linear-gradient(rgba(16, 68, 105, 0.9), rgba(10, 10, 10, 0.9)), url('img/texture-dark.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    margin-bottom: 0 !important;
+}
+
+.lore-container {
+    max-width: 850px;
+    margin: 0 auto;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 60px;
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lore-container h2 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 3rem;
+    color: var(--gold);
+    margin-bottom: 30px;
+}
+
+.lore-container p {
+    font-size: 1.15rem;
+    line-height: 1.9;
+    color: var(--white);
+    opacity: 0.9;
+    margin-bottom: 25px;
+}
+
+.gallery-section {
+    padding: 50px 20px 100px;
+    width: 100%;
+    margin: 0;
+    background-image: linear-gradient(rgba(10, 10, 10, 0.9), rgba(10, 10, 10, 1));
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.gallery-item {
+    position: relative;
+    height: 350px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s ease;
+    filter: brightness(0.9);
+}
+
+.gallery-item::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 50%, rgba(16, 68, 105, 0.8));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.gallery-item:hover {
+    transform: translateY(-15px) scale(1.02);
+    border-color: var(--gold);
+    box-shadow: 0 25px 50px rgba(197, 160, 89, 0.2);
+}
+
+.gallery-item:hover img {
+    transform: scale(1.15);
+    filter: brightness(1.1);
+}
+
+.gallery-item:hover::after {
+    opacity: 1;
+}
+
+.gallery-item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: skewX(-25deg);
+    transition: 0.75s;
+    z-index: 1;
+}
+
+.gallery-item:hover::before {
+    left: 125%;
 }
 
 .affiliati-section {
