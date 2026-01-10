@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ᴅɪʀɪɢᴇɴᴢᴀ • Pactum Patriae</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,600;1,600&family=Public+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="img/favicon.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="logo-link">
+                <img src="img/LogoPP.jpg" alt="Logo" class="logo-img">
+                <span class="brand-text">Pactum Patriae</span>
+            </a>
+        </div>
+        <div class="nav-center">
+            <ul class="menu-pill">
+                <li><a href="index.html" class="menu-link">Home</a></li>
+                <li><a href="dirigenza.html" class="menu-link active">Dirigenza</a></li>
+                <li><a href="sede.html" class="menu-link">Sede</a></li>
+                <li><a href="contatti.html" class="menu-link">Contatti</a></li>
+            </ul>
+        </div>
+        <div class="nav-right">
+            <a href="https://t.me/PactumPatriaeNT" class="link-telegram">Telegram</a>
+            <a href="affiliati.html" class="btn-affiliati">Affiliati</a>
+        </div>
+    </nav>
+
+    <section class="members-section">
+        <div class="members-container">
+            <h2 class="section-title">Alta Dirigenza</h2>
+            
+            <div class="members-grid">
+                <article class="member-card clickable" 
+                         data-nome="Thiago B. Commerford" 
+                         data-ruolo="Presidente Amministrativo"
+                         data-nick="MrSh0t_"
+                         data-lore="Lorem ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ">
+                    <div class="member-img-box">
+                        <img src="img/MrSh0t.png" alt="MrSh0t_" class="member-img">
+                    </div>
+                    <div class="member-info">
+                        <span class="member-role">Presidente Amministrativo</span>
+                        <h3>Thiago B. Commerford</h3>
+                    </div>
+                </article>
+
+                <article class="member-card clickable"
+                         data-nome="Andrea I. Zicli"
+                         data-ruolo="Presidente Generale"
+                         data-nick="Inversus_"
+                         data-lore="Lorem ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ">
+                    <div class="member-img-box">
+                        <img src="img/Inversus.png" alt="Inversus_" class="member-img">
+                    </div>
+                    <div class="member-info">
+                        <span class="member-role">Presidente Generale</span>
+                        <h3>Andrea I. Zicli</h3>
+                    </div>
+                </article>
+
+                <article class="member-card clickable"
+                         data-nome="Alvaro A. García"
+                         data-ruolo="Presidente Burocratico"
+                         data-nick="andric46"
+                         data-lore="Lorem ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. Lorem ipsum dolor sit amet consectetur adipisicing elit. ">
+                    <div class="member-img-box">
+                        <img src="img/andric46.png" alt="andric46" class="member-img">
+                    </div>
+                    <div class="member-info">
+                        <span class="member-role">Presidente Burocratico</span>
+                        <h3>Alvaro A. García</h3>
+                    </div>
+                </article>
+
+                <article class="member-card">
+                    <div class="member-img-box"></div>
+                    <div class="member-info">
+                        <span class="member-role">Vice Presidente Amministrativo</span>
+                        <h3>?</h3>
+                    </div>
+                </article>
+
+                <article class="member-card">
+                    <div class="member-img-box"></div>
+                    <div class="member-info">
+                        <span class="member-role">Vice Presidente Burocratico</span>
+                        <h3>?</h3>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <div id="memberModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div class="modal-body">
+                <h2 id="modalName">Nome Membro</h2>
+                <span class="modal-badge" id="modalRole">Ruolo</span>
+                <hr class="modal-divider">
+                <div class="info-row">
+                    <strong>Codice Fiscale:</strong> <span id="modalNick"></span>
+                </div>
+                <div class="lore-section">
+                    <h4>Lore</h4>
+                    <p id="modalLore"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-credits">
+            Developed by <a href="https://t.me/noylayouknow" target="_blank" class="noyla-link">NOYLA</a>
+        </div>
+        
+        <div class="footer-disclaimer-box">
+            <span class="gdr-warning">Disclaimer Progetto Roleplay</span>
+            <p>
+                Questo sito è una creazione fittizia destinata esclusivamente a scopi di Gioco di Ruolo. 
+                Tutti i contenuti sono opera di fantasia e non hanno riscontri nella realtà.
+            </p>
+            <p>
+                Progetto indipendente: non siamo affiliati, sponsorizzati o collegati a <strong>ZeroRoleplay</strong>. 
+                I diritti dei marchi citati appartengono ai legittimi proprietari.
+            </p>
+            <p style="font-style: italic; opacity: 0.6;">
+                Privacy: I dati (Nickname, Telegram, IP) sono trattati solo per sicurezza interna e prevenzione abusi.
+            </p>
+        </div>
+    </footer>
+
+<script>
+        const modal = document.getElementById("memberModal");
+        const closeBtn = document.querySelector(".close-button");
+
+        document.querySelectorAll('.member-card.clickable').forEach(card => {
+            card.addEventListener('click', () => {
+                document.getElementById('modalName').innerText = card.dataset.nome;
+                document.getElementById('modalRole').innerText = card.dataset.ruolo;
+                document.getElementById('modalNick').innerText = card.dataset.nick;
+                document.getElementById('modalLore').innerText = card.dataset.lore;
+
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        const closeModal = () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        };
+
+        closeBtn.onclick = closeModal;
+        window.onclick = (event) => {
+            if (event.target == modal) closeModal();
+        }
+    </script>
+</body>
+</html>
