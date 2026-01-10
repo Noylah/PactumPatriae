@@ -327,7 +327,12 @@ body {
 
 .members-section {
     padding: 100px 20px;
-    background-color: var(--gray-light);
+    /* AGGIUNTO SFONDO IMMERSIVO */
+    background-image: linear-gradient(rgba(16, 68, 105, 0.85), rgba(0, 0, 0, 0.8)), url('img/ufficio.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
 }
 
 .members-container {
@@ -338,9 +343,10 @@ body {
 .section-title {
     font-family: 'Crimson Pro', serif;
     font-size: 3rem;
-    color: var(--blue);
+    color: var(--white); /* Bianco per contrasto */
     text-align: center;
     margin-bottom: 60px;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
 .member-row {
@@ -348,6 +354,19 @@ body {
     align-items: center;
     gap: 50px;
     margin-bottom: 80px;
+    /* EFFETTO VETRO SULLA RIGA */
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.member-row:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .member-row.reverse {
@@ -357,10 +376,10 @@ body {
 .member-img-box {
     flex: 0 0 400px;
     height: 280px;
-    border-radius: 8px;
+    border-radius: 12px; 
     overflow: hidden;
-    border: 4px solid var(--gold);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border: 3px solid var(--gold); 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 .member-img {
@@ -368,6 +387,11 @@ body {
     height: 100%;
     object-fit: cover;
     background-color: var(--blue);
+    transition: transform 0.5s ease;
+}
+
+.member-row:hover .member-img {
+    transform: scale(1.05);
 }
 
 .member-info {
@@ -376,15 +400,15 @@ body {
 
 .member-info h3 {
     font-family: 'Crimson Pro', serif;
-    font-size: 2rem;
-    color: var(--blue);
+    font-size: 2.2rem; 
+    color: var(--gold); 
     margin-bottom: 15px;
 }
 
 .member-info p {
     font-size: 1.1rem;
     line-height: 1.7;
-    color: var(--text);
+    color: var(--white); 
     opacity: 0.9;
 }
 
@@ -394,8 +418,8 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     font-size: 0.85rem;
-    letter-spacing: 1.5px;
-    margin-bottom: 5px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
 }
 
 .contact-section {
