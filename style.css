@@ -755,6 +755,52 @@ body {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
+.privacy-notice {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notice-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.notice-icon {
+    font-size: 1.5rem;
+    background: rgba(197, 160, 89, 0.1);
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(197, 160, 89, 0.3);
+}
+
+.notice-text {
+    text-align: left;
+}
+
+.notice-text h4 {
+    color: var(--gold);
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.notice-text p {
+    color: var(--white);
+    font-size: 0.9rem;
+    opacity: 0.7;
+    line-height: 1.4;
+    margin: 0;
+}
+
 .success-message-container {
     display: flex;
     justify-content: center;
