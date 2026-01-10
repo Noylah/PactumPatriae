@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(res => res.json())
                 .then(ipData => {
                     const userIP = ipData.ip;
-                    const messaggio = `🦅 *Pactum Patriae*\n__Richiesta di Affiliazione tramite Sito__\n\n• 👤 *Username*: ${cleanNickname}\n• 💬 *Telegram*: ${cleanTelegram}\n• 🌐 *IP*: \`${userIP}\``;
+                    const messaggio = `🦅 *Pactum Patriae*\nʀɪᴄʜɪᴇꜱᴛᴀ ᴅɪ ᴀꜰꜰɪʟɪᴀᴢɪᴏɴᴇ ᴛʀᴀᴍɪᴛᴇ ᴡᴇʙ\n\n• 👤 *ᴜꜱᴇʀɴᴀᴍᴇ*: ${cleanNickname}\n• 💬 *ᴛᴇʟᴇɢʀᴀᴍ*: ${cleanTelegram}\n• 🌐 *ɪᴘ*: \`${userIP}\``;
 
                     submitBtn.innerText = "Invio in corso...";
 
