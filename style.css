@@ -696,8 +696,7 @@ button.btn-hero {
 }
 
 .lore-section {
-    padding: 100px 20px;
-    background-image: linear-gradient(rgba(16, 68, 105, 0.9), rgba(10, 10, 10, 0.9)), url('img/news-bg.jpg'); 
+    padding: 5px 10px;
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
