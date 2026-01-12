@@ -41,7 +41,7 @@
             
             <div class="hero-buttons">
                 <a href="affiliati.html" class="btn-hero btn-gold">Diventa un Affiliato</a>
-                <a href="https://t.me/PactumPatriaeNT" class="btn-hero btn-transparent">Canale Telegram</a>
+                <button id="openHistory" class="btn-hero btn-transparent">La Storia</button>
             </div>
         </div>
     </header>
@@ -118,5 +118,72 @@
         </p>
     </div>
     </footer>
+    <div id="historyModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" id="closeHistory">&times;</span>
+        <span class="modal-badge">CRONACHE DEL PARTITO</span>
+        <h2>La Nostra Storia</h2>
+        
+        <div class="info-row">
+            <strong>Data di Fondazione</strong>
+            <span>15 Gennaio 2026</span>
+        </div>
+
+        <div class="lore-text-box" style="text-align: left; margin-top: 20px; max-height: 400px; overflow-y: auto; padding-right: 10px;">
+            <p style="color: rgba(255, 255, 255, 0.9); line-height: 1.7; margin-bottom: 15px;">
+                Le radici di <strong>Pactum Patriae</strong> affondano nell'8 luglio 2025, quando i vertici di <em>Prima l'Orizzonte</em> e forze indipendenti dell'ex <em>Progresso Riformista</em> diedero vita a <strong>Novum Pactum</strong>, con l'obiettivo di restaurare l'integrità politica di un tempo.
+            </p>
+            
+            <p style="color: rgba(255, 255, 255, 0.9); line-height: 1.7; margin-bottom: 15px;">
+                Dopo la vittoria alle presidenziali di agosto e il successo elettorale di settembre con ben <strong>106 voti</strong> e 4 seggi in Congresso, il percorso subì una brusca interruzione a ottobre a causa di accuse infamanti verso la presidenza, portando allo scioglimento forzato.
+            </p>
+
+            <p style="color: rgba(255, 255, 255, 0.9); line-height: 1.7; margin-bottom: 15px;">
+                Il <strong>15 gennaio 2026</strong> segna la rinascita definitiva: nasce Pactum Patriae. La nostra missione è ribaltare una classe politica corrotta e clientelare, agendo nell'unico interesse della Nazione.
+            </p>
+
+            <p style="color: var(--gold); font-style: italic; font-weight: 600; text-align: center; margin-top: 20px;">
+                Aderisci anche tu al cammino del riassestamento politico. <br>Prima la Patria!
+            </p>
+        </div>
+    </div>
+</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('historyModal');
+            const openBtn = document.getElementById('openHistory');
+            const closeBtn = document.getElementById('closeHistory');
+
+            if (openBtn && modal) {
+                openBtn.onclick = (e) => {
+                    e.preventDefault();
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                };
+            }
+
+            const closeModal = () => {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            };
+
+            if (closeBtn) {
+                closeBtn.onclick = closeModal;
+            }
+
+            window.onclick = (event) => {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            };
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape" && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
