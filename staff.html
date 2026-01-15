@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <script>
+        (function() {
+            if (sessionStorage.getItem('staffAccess') !== 'true') {
+                window.location.replace('login.html');
+            }
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Staff • Pactum Patriae</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,600;1,600&family=Public+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-staff.css">
+    <link rel="icon" href="img/favicon.png" type="image/png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="staff-body">
+    <div class="dashboard-wrapper">
+        <aside class="side-panel">
+            <div class="panel-top">
+                <img src="img/LogoPP.jpg" alt="Logo" class="panel-logo">
+                <span class="panel-title">Pactum Patriae</span>
+                <span class="panel-subtitle">Dashboard Staff</span>
+            </div>
+            
+            <nav class="panel-menu">
+                <a href="#" class="panel-link active">
+                    <span class="dot"></span> Registro Consiglieri
+                </a>
+                <a href="#" class="panel-link">
+                    <span class="dot"></span> Richieste Affiliazioni
+                </a>
+                <a href="#" class="panel-link">
+                    <span class="dot"></span> Archivio Riunioni
+                </a>
+            </nav>
+
+            <div class="panel-bottom">
+                <button class="btn-logout-dash" onclick="logout()">Sloggati</button>
+            </div>
+        </aside>
+
+        <main class="work-area">
+            <header class="work-header">
+                <div class="header-info">
+                    <span class="badge-mini">Dashboard Live</span>
+                    <h1 id="view-title">Registro Consiglieri</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-gold-action" onclick="toggleAddForm()">+ Nuovo Consigliere</button>
+                </div>
+            </header>
+
+            <div id="addFormContainer" style="display: none; margin-bottom: 25px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); backdrop-filter: blur(10px);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="color: #d4af37; margin: 0; font-family: 'Crimson Pro', serif; font-size: 1.2rem;">✦ Registra Nuovo Consigliere</h3>
+                    <button onclick="toggleAddForm()" style="background:none; border:none; color:rgba(255,255,255,0.5); cursor:pointer; font-size: 1.2rem;">✕</button>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <input type="text" id="nuovoNome" placeholder="Inserisci il Nome..." 
+                           style="flex: 1; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: white; border-radius: 6px; outline: none;">
+                    <button class="btn-gold-action" onclick="aggiungiConsigliere()" style="padding: 10px 25px; min-width: 120px;">SALVA</button>
+                </div>
+            </div>
+
+            <section class="glass-table-card">
+                <div class="table-scroll">
+                    <table class="dash-table">
+                        <thead>
+                            <tr id="table-head">
+                                <th style="text-align: left;">Nome Consigliere</th>
+                                <th style="text-align: center;">Presenze Totali</th>
+                                <th style="text-align: right; padding-right: 0;">Operazioni</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staff-data-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="staff.js"></script>
+</body>
+</html>

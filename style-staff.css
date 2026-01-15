@@ -1,0 +1,227 @@
+.staff-body {
+    background: #050505 !important;
+    overflow: hidden;  
+}
+
+.dashboard-wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+.side-panel {
+    width: 300px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-right: 1px solid rgba(197, 160, 89, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 40px 0;
+}
+
+.panel-top {
+    text-align: center;
+    margin-bottom: 50px;
+    padding: 0 20px;
+}
+
+.panel-logo {
+    width: 60px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    margin-bottom: 15px;
+}
+
+.panel-title {
+    display: block;
+    font-family: 'Crimson Pro', serif;
+    color: var(--gold);
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+}
+
+.panel-subtitle {
+    font-size: 0.7rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.panel-menu {
+    flex-grow: 1;
+}
+
+.panel-link {
+    display: flex;
+    align-items: center;
+    padding: 20px 30px;
+    color: #999;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-left: 3px solid transparent;
+    transition: 0.3s;
+}
+
+.panel-link .dot {
+    width: 6px;
+    height: 6px;
+    background: #444;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.panel-link:hover, .panel-link.active {
+    background: rgba(197, 160, 89, 0.05);
+    color: #fff;
+    border-left: 3px solid var(--gold);
+}
+
+.panel-link.active .dot {
+    background: var(--gold);
+    box-shadow: 0 0 10px var(--gold);
+}
+
+
+.work-area {
+    flex-grow: 1;
+    padding: 40px;
+    overflow-y: auto;
+    min-width: 0;
+}
+
+.work-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px;
+}
+
+.work-header h1 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 2.8rem;
+    color: #fff;
+    margin: 10px 0 0 0;
+}
+
+.badge-mini {
+    color: var(--gold);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+.glass-table-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 20px;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.dash-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.glass-table-card::-webkit-scrollbar {
+    height: 6px;
+}
+
+.glass-table-card::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 10px;
+}
+
+.glass-table-card::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dash-table th {
+    text-align: left;
+    color: var(--gold);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dash-table td {
+    padding: 20px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.btn-gold-action {
+    background: var(--gold);
+    color: #000;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-gold-action:hover {
+    box-shadow: 0 0 20px var(--gold-glow);
+    transform: translateY(-2px);
+}
+
+.btn-logout-dash {
+    width: 80%;
+    margin: 0 auto;
+    display: block;
+    background: transparent;
+    border: 1px solid #ff4d4d;
+    color: #ff4d4d;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-action-dash {
+    width: 100px;           
+    padding: 8px 0;         
+    font-size: 0.65rem;     
+    font-weight: 600;
+    letter-spacing: 1px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    text-transform: uppercase;
+    background: transparent;
+}
+
+.btn-action-dash.edit {
+    color: #d4af37;
+    border: 1px solid rgba(212, 175, 55, 0.5);
+}
+.btn-action-dash.edit:hover {
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.btn-action-dash.save {
+    color: #000;
+    background: #d4af37;
+    border: 1px solid #d4af37;
+}
+
+.btn-action-dash.delete {
+    color: #ff4d4d;
+    border: 1px solid rgba(255, 77, 77, 0.4);
+}
+.btn-action-dash.delete:hover {
+    background: rgba(255, 77, 77, 0.1);
+    border-color: #ff4d4d;
+}
