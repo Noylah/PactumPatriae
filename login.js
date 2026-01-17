@@ -12,34 +12,45 @@ document.addEventListener('DOMContentLoaded', () => {
 async function handleLogin(event) {
     event.preventDefault();
     
-    const password = document.getElementById('password').value;
+    const usernameInput = document.getElementById('username').value.trim();
+    const passwordInput = document.getElementById('password').value.trim();
     const errorDisplay = document.getElementById('errorMessage');
 
-    console.log("Tentativo di accesso su tabella staff_users...");
+    errorDisplay.style.display = "none";
 
     try {
-        // Cambiato il nome della tabella in 'staff_users'
-        // Assicurati che la colonna nel DB si chiami 'password'
         const { data, error } = await _supabase
-            .from('staff_users')
-            .select('*')
-            .eq('password', password) 
-            .single();
+            .from('staff_users') 
+            .select('username, password')
+            .eq('username', usernameInput)
+            .eq('password', passwordInput)
+            .maybeSingle(); 
 
-        if (error || !data) {
-            console.warn("Credenziali errate o tabella non configurata:", error);
-            errorDisplay.innerText = "Codice d'Accesso non valido.";
+        if (error) {
+            console.error("Errore Supabase:", error);
+            if (error.code === 'PGRST116' || error.message.includes('not found')) {
+                console.error("ATTENZIONE: La tabella 'staff_users' non esiste. Prova a rinominarla nel codice in 'utenti_staff'.");
+            }
+            errorDisplay.innerText = "Errore tecnico di configurazione.";
             errorDisplay.style.display = "block";
             return;
         }
 
-        console.log("Accesso riuscito!");
+        if (!data) {
+            errorDisplay.innerText = "Username o Password errati.";
+            errorDisplay.style.display = "block";
+            return;
+        }
+
+        console.log("Benvenuto,", data.username);
         sessionStorage.setItem('staffAccess', 'true');
+        sessionStorage.setItem('loggedUser', data.username); 
+        
         window.location.href = 'staff.html';
 
     } catch (err) {
-        console.error("Errore tecnico:", err);
-        errorDisplay.innerText = "Errore di connessione al sistema.";
+        console.error("Errore imprevisto:", err);
+        errorDisplay.innerText = "Connessione fallita.";
         errorDisplay.style.display = "block";
     }
 }
