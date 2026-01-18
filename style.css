@@ -696,8 +696,6 @@ button.btn-hero {
 }
 
 .lore-section {
-    background: #050505 !important; 
-    background-image: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%) !important;
     margin: 0 !important;
     margin-top: 20px;
     display: flex !important;
