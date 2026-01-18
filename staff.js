@@ -130,6 +130,8 @@ function abilitaModifica(id) {
 }
 
 async function salvaModifica(id) {
+    const vecchioNomeSpan = document.getElementById(`nome-text-${id}`);
+    const vecchioNome = vecchioNomeSpan.innerText.trim();
     const nuovoNome = document.getElementById(`edit-input-${id}`).value.trim();
 
     if (!nuovoNome) {
@@ -137,20 +139,42 @@ async function salvaModifica(id) {
         return;
     }
 
+    if (nuovoNome === vecchioNome) {
+        fetchConsiglieri();
+        return;
+    }
+
     try {
-        const { error } = await _supabase
+        const { error: errConsigliere } = await _supabase
             .from('consiglieri')
             .update({ nome: nuovoNome })
             .eq('id', id);
 
-        if (error) throw error;
-        fetchConsiglieri(); 
-    } catch (err) {
-        alert("Impossibile aggiornare: " + err.message);
-    }
-}
+        if (errConsigliere) throw errConsigliere;
 
-function logout() {
-    sessionStorage.removeItem('staffAccess');
-    window.location.replace('login.html');
+        const { data: riunioniCoinvolte, error: errFetchR } = await _supabase
+            .from('riunioni')
+            .select('id, presenti');
+
+        if (errFetchR) throw errFetchR;
+
+        for (const riunione of riunioniCoinvolte) {
+            if (riunione.presenti && riunione.presenti.includes(vecchioNome)) {
+                const nuoviPresenti = riunione.presenti.map(n => n === vecchioNome ? nuovoNome : n);
+                
+                const { error: errUpdateR } = await _supabase
+                    .from('riunioni')
+                    .update({ presenti: nuoviPresenti })
+                    .eq('id', riunione.id);
+                
+                if (errUpdateR) console.error("Errore aggiornamento riunione:", riunione.id);
+            }
+        }
+
+        alert("Consigliere e presenze aggiornati con successo!");
+        fetchConsiglieri(); 
+        
+    } catch (err) {
+        alert("Errore durante l'aggiornamento globale: " + err.message);
+    }
 }
