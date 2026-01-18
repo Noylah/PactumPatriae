@@ -1271,3 +1271,25 @@ button.btn-hero {
         font-size: 0.75rem;
     }
 }
+
+@media (max-width: 768px) {
+    .members-grid{
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .card-presgen {
+        order: 1 !important;
+    }
+    .card-presamm {
+        order: 2 !important;
+    }
+    .card-presbur {
+        order: 3 !important;
+    }
+    .card-vpresamm {
+        order: 4 !important;
+    }
+    .card-vpresbur {
+        order: 5 !important;
+    }
+}
