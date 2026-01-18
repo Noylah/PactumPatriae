@@ -534,7 +534,7 @@ button.btn-hero {
     font-family: 'Crimson Pro', serif;
     font-size: 1.2rem;
     color: var(--gold);
-    margin-bottom: 12px;
+    margin-bottom: 0px;
     text-transform: none; 
     letter-spacing: 0.5px;
 }
@@ -696,13 +696,15 @@ button.btn-hero {
 }
 
 .lore-section {
-    padding: 100px 20px !important;
     background: #050505 !important; 
     background-image: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%) !important;
     margin: 0 !important;
+    margin-top: 20px;
     display: flex !important;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    text-align: center;
     width: 100%;
 }
 
