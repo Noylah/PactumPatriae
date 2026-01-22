@@ -21,17 +21,14 @@ async function handleLogin(event) {
     try {
         const { data, error } = await _supabase
             .from('staff_users') 
-            .select('username, password')
+            .select('username, password, permessi') 
             .eq('username', usernameInput)
             .eq('password', passwordInput)
             .maybeSingle(); 
 
         if (error) {
             console.error("Errore Supabase:", error);
-            if (error.code === 'PGRST116' || error.message.includes('not found')) {
-                console.error("ATTENZIONE: La tabella 'staff_users' non esiste. Prova a rinominarla nel codice in 'utenti_staff'.");
-            }
-            errorDisplay.innerText = "Errore tecnico di configurazione.";
+            errorDisplay.innerText = "Errore tecnico di connessione.";
             errorDisplay.style.display = "block";
             return;
         }
@@ -42,11 +39,23 @@ async function handleLogin(event) {
             return;
         }
 
-        console.log("Benvenuto,", data.username);
         sessionStorage.setItem('staffAccess', 'true');
         sessionStorage.setItem('loggedUser', data.username); 
+        sessionStorage.setItem('userPermessi', data.permessi || "");
         
-        window.location.href = 'staff.html';
+        const p = data.permessi || "";
+        if (data.username === 'Zicli' || p.includes('C')) {
+            window.location.replace('staff.html');
+        } else if (p.includes('R')) {
+            window.location.replace('riunioni.html');
+        } else if (p.includes('E')) {
+            window.location.replace('bilancio.html');
+        } else if (p.includes('A')) {
+            window.location.replace('credenziali.html');
+        } else {
+            errorDisplay.innerText = "Account senza permessi di accesso.";
+            errorDisplay.style.display = "block";
+        }
 
     } catch (err) {
         console.error("Errore imprevisto:", err);

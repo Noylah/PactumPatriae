@@ -171,3 +171,27 @@ function logout() {
     sessionStorage.removeItem('staffAccess');
     window.location.replace('login.html');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    gestisciAccessoPagina('E');
+});
+
+function gestisciAccessoPagina(letteraNecessaria) {
+    const permessi = sessionStorage.getItem('userPermessi') || "";
+    const sessionUser = sessionStorage.getItem('loggedUser') || "";
+    if (sessionUser === 'Zicli') return;
+
+    if (!permessi.includes(letteraNecessaria)) {
+        alert("Accesso non autorizzato.");
+        window.location.replace('staff.html');
+        return;
+    }
+
+    const mappe = { 'staff.html': 'C', 'riunioni.html': 'R', 'bilancio.html': 'E', 'credenziali.html': 'A' };
+    document.querySelectorAll('.panel-link').forEach(link => {
+        const href = link.getAttribute('href').split('/').pop();
+        if (mappe[href] && !permessi.includes(mappe[href])) {
+            link.style.display = 'none';
+        }
+    });
+}

@@ -10,6 +10,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 document.addEventListener('DOMContentLoaded', () => {
+    gestisciAccessoPagina('C');
     fetchConsiglieri();
 });
 
@@ -177,4 +178,40 @@ async function salvaModifica(id) {
     } catch (err) {
         alert("Errore durante l'aggiornamento globale: " + err.message);
     }
+}
+
+function logout() {
+    sessionStorage.clear(); 
+    window.location.replace('login.html');
+}
+
+function gestisciAccessoPagina(letteraNecessaria) {
+    const permessi = sessionStorage.getItem('userPermessi') || "";
+    const sessionUser = sessionStorage.getItem('loggedUser') || "";
+
+    if (sessionUser.trim() === 'Zicli') return;
+
+    if (!permessi.includes(letteraNecessaria)) {
+        alert("Accesso non autorizzato.");
+        window.location.replace('login.html'); 
+        return;
+    }
+
+    const mappe = {
+        'staff.html': 'C',
+        'riunioni.html': 'R',
+        'bilancio.html': 'E',
+        'credenziali.html': 'A'
+    };
+
+    document.querySelectorAll('.panel-link').forEach(link => {
+        const href = link.getAttribute('href').split('/').pop();
+        const letteraRichiesta = mappe[href];
+
+        if (letteraRichiesta && !permessi.includes(letteraRichiesta)) {
+            link.style.display = 'none';
+        } else {
+            link.style.display = 'flex';
+        }
+    });
 }

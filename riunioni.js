@@ -198,3 +198,27 @@ function toggleRow(id) { const r = document.getElementById(id); const vis = r.st
 function toggleRiunioneForm() { const f = document.getElementById('riunioneFormContainer'); f.style.display = (f.style.display === 'none') ? 'block' : 'none'; if(f.style.display === 'block') fetchConsiglieriPerAppello(); }
 
 document.addEventListener('DOMContentLoaded', fetchRiunioni);
+
+document.addEventListener('DOMContentLoaded', () => {
+    gestisciAccessoPagina('R'); 
+});
+
+function gestisciAccessoPagina(letteraNecessaria) {
+    const permessi = sessionStorage.getItem('userPermessi') || "";
+    const sessionUser = sessionStorage.getItem('loggedUser') || "";
+    if (sessionUser === 'Zicli') return;
+
+    if (!permessi.includes(letteraNecessaria)) {
+        alert("Accesso non autorizzato.");
+        window.location.replace('staff.html');
+        return;
+    }
+
+    const mappe = { 'staff.html': 'C', 'riunioni.html': 'R', 'bilancio.html': 'E', 'credenziali.html': 'A' };
+    document.querySelectorAll('.panel-link').forEach(link => {
+        const href = link.getAttribute('href').split('/').pop();
+        if (mappe[href] && !permessi.includes(mappe[href])) {
+            link.style.display = 'none';
+        }
+    });
+}
