@@ -696,6 +696,7 @@ button.btn-hero {
 }
 
 .lore-section {
+    background-image: linear-gradient(rgba(10, 10, 10, 0.9), rgba(10, 10, 10, 1));
     margin: 0 !important;
     margin-top: 20px;
     display: flex !important;
