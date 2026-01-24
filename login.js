@@ -2,6 +2,16 @@ const SUPABASE_URL = 'https://ljqyjqgjeloceimeiayr.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqcXlqcWdqZWxvY2VpbWVpYXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMjAxNTMsImV4cCI6MjA4Mzc5NjE1M30.dNvhvad9_mR64RqeNZyu4X_GdxSOFz23TuiLt33GXxk';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+async function inviaLog(messaggio, utente = "Sistema", descrizione = "") {
+    try {
+        await _supabase.functions.invoke('send-telegram-log', {
+            body: { messaggio, utente, descrizione }
+        });
+    } catch (err) {
+        console.error("Errore log:", err.message);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
@@ -27,6 +37,7 @@ async function handleLogin(event) {
         });
 
         if (authError) {
+            inviaLog("Sicurezza: Login fallito", usernameInput, "Credenziali errate");
             errorDisplay.innerText = "Username o Password errati.";
             errorDisplay.style.display = "block";
             return;
@@ -39,6 +50,7 @@ async function handleLogin(event) {
             .maybeSingle();
 
         if (userError || !userData) {
+            inviaLog("Sicurezza: Login bloccato", usernameInput, "Utente autenticato ma non presente in staff_users");
             errorDisplay.innerText = "Profilo non trovato nel database staff.";
             errorDisplay.style.display = "block";
             return;
@@ -48,6 +60,8 @@ async function handleLogin(event) {
         sessionStorage.setItem('loggedUser', userData.username); 
         sessionStorage.setItem('userPermessi', userData.permessi || "");
         
+        inviaLog("Sistema: Login effettuato", userData.username, `Permessi: ${userData.permessi || "Nessuno"}`);
+
         const p = userData.permessi || "";
         if (userData.username === 'Zicli' || p.includes('C')) {
             window.location.replace('staff.html');

@@ -4,6 +4,17 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_AUTORIZZATO = 'Zicli'; 
 
+async function inviaLog(messaggio, descrizione = "") {
+    const utente = sessionStorage.getItem('loggedUser') || 'Sconosciuto';
+    try {
+        await _supabase.functions.invoke('send-telegram-log', {
+            body: { messaggio, utente, descrizione }
+        });
+    } catch (err) {
+        console.error("Errore log:", err.message);
+    }
+}
+
 async function inizializzaCredenziali() {
     const sessionUser = sessionStorage.getItem('loggedUser'); 
     const permessi = sessionStorage.getItem('userPermessi') || "";
@@ -12,6 +23,7 @@ async function inizializzaCredenziali() {
         fetchUtenti();
         gestisciMenuLaterale();
     } else {
+        inviaLog("Sicurezza: Accesso negato", "Tentativo accesso non autorizzato a Credenziali");
         alert("Accesso negato.");
         window.location.href = 'staff.html';
     }
@@ -55,7 +67,9 @@ async function creaAccount() {
 
     if (error) {
         alert("Errore: l'utente esiste già o problema di connessione.");
+        inviaLog("Sicurezza: Errore creazione account", `Username: ${user} | Errore: ${error.message}`);
     } else {
+        inviaLog("Sicurezza: Nuovo account creato", `Username: ${user}`);
         alert("Username aggiunto! Ora crealo su Supabase Auth.");
         document.getElementById('newUsername').value = '';
         toggleUserForm();
@@ -79,14 +93,14 @@ async function fetchUtenti() {
                 <input type="text" value="${u.username}" 
                     class="minimal-input" 
                     style="background:transparent; border:none; color:#d4af37; font-weight:bold; width:100%;" 
-                    onchange="aggiornaUsername(${u.id}, this.value)">
+                    onchange="aggiornaUsername(${u.id}, this.value, '${u.username}')">
             </td>
             <td style="text-align: center;">
                 <div style="display: flex; gap: 4px; justify-content: center;">
-                    ${creaBottone(u.id, 'C', p.includes('C'), 'Consiglieri')}
-                    ${creaBottone(u.id, 'R', p.includes('R'), 'Riunioni')}
-                    ${creaBottone(u.id, 'E', p.includes('E'), 'Economia')}
-                    ${creaBottone(u.id, 'A', p.includes('A'), 'Admin')}
+                    ${creaBottone(u.id, 'C', p.includes('C'), 'Consiglieri', u.username)}
+                    ${creaBottone(u.id, 'R', p.includes('R'), 'Riunioni', u.username)}
+                    ${creaBottone(u.id, 'E', p.includes('E'), 'Economia', u.username)}
+                    ${creaBottone(u.id, 'A', p.includes('A'), 'Admin', u.username)}
                 </div>
             </td>
             <td style="text-align: right;">
@@ -100,38 +114,49 @@ async function fetchUtenti() {
     });
 }
 
-function creaBottone(userId, lettera, attivo, label) {
+function creaBottone(userId, lettera, attivo, label, username) {
     const stileBase = `width: 35px; height: 35px; border-radius: 6px; cursor: pointer; font-weight: 800; border: 1px solid; transition: all 0.2s;`;
     const stileStato = attivo 
         ? `background: #d4af37; color: #1a1a1a; border-color: #d4af37;` 
         : `background: transparent; color: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.1);`;
 
-    return `<button title="${label}" onclick="togglePermesso(${userId}, '${lettera}')" style="${stileBase} ${stileStato}">${lettera}</button>`;
+    return `<button title="${label}" onclick="togglePermesso(${userId}, '${lettera}', '${username}')" style="${stileBase} ${stileStato}">${lettera}</button>`;
 }
 
-async function aggiornaUsername(id, nuovoNome) {
+async function aggiornaUsername(id, nuovoNome, vecchioNome) {
     if (!nuovoNome.trim()) return fetchUtenti();
     const { error } = await _supabase.from('staff_users').update({ username: nuovoNome.trim() }).eq('id', id);
-    if (error) alert("Errore nell'aggiornamento username.");
+    if (error) {
+        alert("Errore nell'aggiornamento username.");
+    } else {
+        inviaLog("Sicurezza: Username modificato", `Da ${vecchioNome} a ${nuovoNome}`);
+    }
     fetchUtenti();
 }
 
-async function togglePermesso(id, lettera) {
+async function togglePermesso(id, lettera, username) {
     const { data } = await _supabase.from('staff_users').select('permessi').eq('id', id).single();
     let p = data.permessi || "";
     p = p.includes(lettera) ? p.replace(lettera, "") : p + lettera;
-    await _supabase.from('staff_users').update({ permessi: p }).eq('id', id);
+    const { error } = await _supabase.from('staff_users').update({ permessi: p }).eq('id', id);
+    if (!error) {
+        inviaLog("Sicurezza: Permessi modificati", `Utente: ${username} | Permesso [${lettera}] ${p.includes(lettera) ? 'Attivato' : 'Disattivato'}`);
+    }
     fetchUtenti();
 }
 
 async function rimuoviPermessi(id, username) {
     if (username === ADMIN_AUTORIZZATO) return alert("Impossibile revocare i permessi dell'Admin.");
     if (!confirm(`Rimuovere i permessi a ${username}?`)) return;
-    await _supabase.from('staff_users').delete().eq('id', id);
+    const { error } = await _supabase.from('staff_users').delete().eq('id', id);
+    if (!error) {
+        inviaLog("Sicurezza: Account rimosso", `Revocati tutti i permessi a ${username}`);
+    }
     fetchUtenti();
 }
 
 function logout() {
+    inviaLog("Sistema: Logout");
     _supabase.auth.signOut();
     sessionStorage.clear();
     window.location.replace('login.html');

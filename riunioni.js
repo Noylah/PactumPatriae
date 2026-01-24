@@ -3,30 +3,35 @@ const _supabase = supabase.createClient('https://ljqyjqgjeloceimeiayr.supabase.c
 const TELEGRAM_TOKEN = "8347858927:AAHq0cjHotz3gZmm_9TufH1w50tOxmpcyAo";
 const TELEGRAM_CHAT_ID = "-5106609681";
 
+async function inviaLog(messaggio, descrizione = "") {
+    const utente = sessionStorage.getItem('loggedUser') || 'Sconosciuto';
+    try {
+        await _supabase.functions.invoke('send-telegram-log', {
+            body: { 
+                messaggio: messaggio, 
+                utente: utente,
+                descrizione: descrizione 
+            }
+        });
+        console.log("Log Telegram inviato!");
+    } catch (err) {
+        console.error("Errore invio log:", err.message);
+    }
+}
+
 async function inviaOdGTelegram(data, presidiata, odgRaw) {
     if (!data || !presidiata || !odgRaw) return;
 
     const dataObj = new Date(data);
-const mesi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
-
-const giorno = dataObj.getDate();
-const mese = mesi[dataObj.getMonth()]; 
-const anno = dataObj.getFullYear();
-
-const dataFormattata = `${giorno} ${mese} ${anno}`;
+    const mesi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+    const dataFormattata = `${dataObj.getDate()} ${mesi[dataObj.getMonth()]} ${dataObj.getFullYear()}`;
 
     const puntiPuntati = odgRaw.split('\n')
         .filter(riga => riga.trim() !== "") 
         .map(riga => `• ${riga.trim()}`) 
         .join('\n'); 
 
-    const messaggio = `🦅 *Pactum Patriae*\n` +
-                      `ᴏʀᴅɪɴᴇ ᴅᴇʟ ɢɪᴏʀɴᴏ\n\n` +
-
-                      `🏛 *ᴅᴀᴛᴀ:* ${dataFormattata}\n` +
-                      `👤 *ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:* ${presidiata}\n\n` +
-
-                      `📝 *ᴘᴜɴᴛɪ ᴅɪꜱᴄᴜꜱꜱɪᴏɴᴇ:\n*${puntiPuntati}` 
+    const messaggio = `🦅 *Pactum Patriae*\n` + `ᴏʀᴅɪɴᴇ ᴅᴇʟ ɢɪᴏʀɴᴏ\n\n` + `🏛 *ᴅᴀᴛᴀ:* ${dataFormattata}\n` + `👤 *ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:* ${presidiata}\n\n` + `📝 *ᴘᴜɴᴛɪ ᴅɪꜱᴄᴜꜱꜱɪᴏɴᴇ:\n*${puntiPuntati}`
 
     try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
@@ -39,9 +44,9 @@ const dataFormattata = `${giorno} ${mese} ${anno}`;
             })
         });
         alert("Inviato su Telegram!");
+        inviaLog("Riunioni: OdG inviato su Telegram", `Data: ${dataFormattata} | Presieduta da: ${presidiata}`);
     } catch (err) { console.error(err); }
 }
-
 
 async function salvaComeOdG() {
     const dataVal = document.getElementById('dataRiunione').value;
@@ -58,10 +63,13 @@ async function salvaComeOdG() {
     }]);
 
     if (!error) {
+        inviaLog("Riunioni: Creato OdG", `Data: ${dataVal} | Presieduta da: ${chiVal}`);
         if(confirm("OdG salvato. Inviare ora su Telegram?")) {
             await inviaOdGTelegram(dataVal, chiVal, odgVal);
         }
         location.reload();
+    } else {
+        inviaLog("Riunioni: Errore creazione OdG", error.message);
     }
 }
 
@@ -98,7 +106,7 @@ async function finalizzaConversione(id) {
         return st ? `${t} | ${st}` : t;
     }).join('\n');
 
-    await _supabase.from('riunioni').update({ 
+    const { error } = await _supabase.from('riunioni').update({ 
         data, 
         presidiata_da: presidiata, 
         odg: nuovoOdg, 
@@ -106,7 +114,10 @@ async function finalizzaConversione(id) {
         stato: 'conclusa' 
     }).eq('id', id);
     
-    location.reload();
+    if (!error) {
+        inviaLog("Riunioni: OdG convertito in Resoconto", `Data: ${data} | ID: ${id}`);
+        location.reload();
+    }
 }
 
 function renderEditableODG(odgRaw) {
@@ -186,7 +197,13 @@ async function salvaRiunione() {
     const selezionati = Array.from(document.querySelectorAll('input[name="presenti"]:checked')).map(cb => cb.value);
     if (!dataVal || !chiVal || !odgVal) return alert("Compila tutti i campi.");
     const { error } = await _supabase.from('riunioni').insert([{ data: dataVal, presidiata_da: chiVal, odg: odgVal, presenti: selezionati, stato: 'conclusa' }]);
-    if (error) alert(error.message); else location.reload();
+    if (error) {
+        alert(error.message);
+        inviaLog("Riunioni: Errore salvataggio resoconto", error.message);
+    } else {
+        inviaLog("Riunioni: Nuovo resoconto creato", `Data: ${dataVal} | Presenti: ${selezionati.length}`);
+        location.reload();
+    }
 }
 
 async function fetchRiunioni() {
@@ -225,7 +242,7 @@ async function fetchRiunioni() {
             <td style="text-align: right; white-space: nowrap;">
                 <button class="btn-action-dash edit" style="background:#0088cc; color:white; border:none;" onclick="event.stopPropagation(); ${r.stato === 'odg' ? `inviaOdGTelegram('${dataSafe}', '${presSafe}', '${odgSafe}')` : `inviaResocontoTelegram('${dataSafe}', '${presSafe}', '${odgSafe}')`}">✈️</button>
                 ${r.stato === 'odg' ? `<button class="btn-action-dash save" onclick="event.stopPropagation(); convertiInResoconto(${r.id})">CONVERTI</button>` : `<button class="btn-action-dash edit" onclick="event.stopPropagation(); modificaRiunione(${r.id})">MODIFICA</button>`}
-                <button class="btn-action-dash delete" onclick="event.stopPropagation(); eliminaRiunione(${r.id})">X</button>
+                <button class="btn-action-dash delete" onclick="event.stopPropagation(); eliminaRiunione(${r.id}, '${dataSafe}')">X</button>
             </td>
         `;
 
@@ -281,16 +298,33 @@ async function salvaModificaCompleta() {
         const st = act ? {'A':'APPROVATA','R':'RESPINTA','S':'SOSPESA'}[act.innerText] : '';
         return st ? `${t} | ${st}` : t;
     }).join('\n');
-    await _supabase.from('riunioni').update({ data, presidiata_da: presidiata, odg: nuovoOdg, presenti }).eq('id', id);
-    chiudiModal(); fetchRiunioni();
+    const { error } = await _supabase.from('riunioni').update({ data, presidiata_da: presidiata, odg: nuovoOdg, presenti }).eq('id', id);
+    if(!error) {
+        inviaLog("Riunioni: Verbale modificato", `Data: ${data} | ID: ${id}`);
+        chiudiModal(); 
+        fetchRiunioni();
+    }
 }
 
-async function eliminaRiunione(id) {
-    if (confirm("Eliminare?")) { await _supabase.from('riunioni').delete().eq('id', id); fetchRiunioni(); }
+async function eliminaRiunione(id, dataRiunione) {
+    if (confirm("Eliminare questa riunione?")) { 
+        const { error } = await _supabase.from('riunioni').delete().eq('id', id); 
+        if(!error) {
+            inviaLog("Riunioni: Verbale eliminato", `Data: ${dataRiunione} | ID: ${id}`);
+            fetchRiunioni(); 
+        }
+    }
 }
 
 function chiudiModal() { document.getElementById('editModal').style.display = 'none'; document.body.style.overflow = 'auto'; }
-function toggleRow(id) { const r = document.getElementById(id); const vis = r.style.display === 'table-row'; document.querySelectorAll('.row-details').forEach(x => x.style.display = 'none'); r.style.display = vis ? 'none' : 'table-row'; }
+
+function toggleRow(id) { 
+    const r = document.getElementById(id); 
+    const vis = r.style.display === 'table-row'; 
+    document.querySelectorAll('.row-details').forEach(x => x.style.display = 'none'); 
+    r.style.display = vis ? 'none' : 'table-row'; 
+}
+
 function toggleRiunioneForm() { 
     const f = document.getElementById('riunioneFormContainer'); 
     f.style.display = (f.style.display === 'none') ? 'block' : 'none'; 
@@ -312,17 +346,7 @@ async function inviaResocontoTelegram(data, presidiata, odgRaw) {
         puntiFormattati += `• ${emoji} ${testo}${stato ? ` (*${stato}*)` : ''}\n`;
     });
 
-    const messaggio = `
-🦅 *Pactum Patriae*
-ʀᴇꜱᴏᴄᴏɴᴛᴏ ʀɪᴜɴɪᴏɴᴇ ᴀꜱꜱᴇᴍʙʟᴇᴀ
-
-🏛 *ᴅᴀᴛᴀ:* ${dataFormattata}
-👤 *ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:* ${presidiata}
-
-📝 *ᴇꜱɪᴛᴏ ᴘᴜɴᴛɪ ᴅɪꜱᴄᴜꜱꜱɪ:*
-
-${puntiFormattati}
-    `;
+    const messaggio = `🦅 *Pactum Patriae*\nʀᴇꜱᴏᴄᴏɴᴛᴏ ʀɪᴜɴɪᴏɴᴇ ᴀꜱꜱᴇᴍʙʟᴇᴀ\n🏛 *ᴅᴀᴛᴀ:* ${dataFormattata}\n👤 *ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:* ${presidiata}\n📝 *ᴇꜱɪᴛᴏ ᴘᴜɴᴛɪ ᴅɪꜱᴄᴜꜱꜱɪ:*\n${puntiFormattati}`;
 
     try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
@@ -331,11 +355,12 @@ ${puntiFormattati}
             body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: messaggio, parse_mode: 'Markdown' })
         });
         alert("Resoconto inviato su Telegram!");
+        inviaLog("Riunioni: Resoconto inviato su Telegram", `Data: ${dataFormattata}`);
     } catch (err) { console.error(err); }
 }
 
-
 function logout() {
+    inviaLog("Sistema: Logout effettuato");
     _supabase.auth.signOut();
     sessionStorage.clear();
     window.location.replace('login.html');
@@ -351,6 +376,7 @@ function gestisciAccessoPagina(letteraNecessaria) {
     const sessionUser = sessionStorage.getItem('loggedUser') || "";
     if (sessionUser === 'Zicli') return;
     if (!permessi.includes(letteraNecessaria)) {
+        inviaLog("Sicurezza: Tentativo accesso negato", "Pagina Riunioni");
         alert("Accesso non autorizzato.");
         window.location.replace('staff.html');
         return;

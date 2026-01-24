@@ -9,6 +9,17 @@ const SUPABASE_URL = 'https://ljqyjqgjeloceimeiayr.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqcXlqcWdqZWxvY2VpbWVpYXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMjAxNTMsImV4cCI6MjA4Mzc5NjE1M30.dNvhvad9_mR64RqeNZyu4X_GdxSOFz23TuiLt33GXxk';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+async function inviaLog(messaggio, descrizione = "") {
+    const utente = sessionStorage.getItem('loggedUser') || 'Sconosciuto';
+    try {
+        await _supabase.functions.invoke('send-telegram-log', {
+            body: { messaggio, utente, descrizione }
+        });
+    } catch (err) {
+        console.error("Errore log:", err.message);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     gestisciAccessoPagina('C');
     fetchConsiglieri();
@@ -68,7 +79,7 @@ async function fetchConsiglieri() {
                     <div style="display: flex; justify-content: flex-end; gap: 8px; align-items: center;">
                         <button id="btn-edit-${c.id}" class="btn-action-dash edit" onclick="abilitaModifica(${c.id})">MODIFICA</button>
                         <button id="btn-save-${c.id}" class="btn-action-dash save" style="display:none;" onclick="salvaModifica(${c.id})">SALVA</button>
-                        <button class="btn-action-dash delete" onclick="eliminaConsigliere(${c.id})">RIMUOVI</button>
+                        <button class="btn-action-dash delete" onclick="eliminaConsigliere(${c.id}, '${c.nome}')">RIMUOVI</button>
                     </div>
                 </td>
             `;
@@ -80,10 +91,11 @@ async function fetchConsiglieri() {
     }
 }
 
-async function eliminaConsigliere(id) {
+async function eliminaConsigliere(id, nome) {
     if(confirm("Sei sicuro di voler rimuovere permanentemente questo consigliere?")) {
         const { error } = await _supabase.from('consiglieri').delete().eq('id', id);
         if(!error) {
+            inviaLog("Consiglieri: Membro rimosso", `Nome: ${nome}`);
             fetchConsiglieri();
         } else {
             alert("Errore durante l'eliminazione: " + error.message);
@@ -108,6 +120,7 @@ async function aggiungiConsigliere() {
 
         if (error) throw error;
         
+        inviaLog("Consiglieri: Nuovo membro aggiunto", `Nome: ${nome}`);
         nomeInput.value = '';
         toggleAddForm();
         fetchConsiglieri(); 
@@ -172,15 +185,17 @@ async function salvaModifica(id) {
             }
         }
 
+        inviaLog("Consiglieri: Nome modificato", `Da: ${vecchioNome} a: ${nuovoNome}`);
         alert("Consigliere e presenze aggiornati con successo!");
         fetchConsiglieri(); 
         
     } catch (err) {
-        alert("Errore durante l'aggiornamento globale: " + err.message);
+        alert("Errore durante l'aggiornamento: " + err.message);
     }
 }
 
 function logout() {
+    inviaLog("Sistema: Logout effettuato");
     _supabase.auth.signOut();
     sessionStorage.clear();
     window.location.replace('login.html');
@@ -193,6 +208,7 @@ function gestisciAccessoPagina(letteraNecessaria) {
     if (sessionUser.trim() === 'Zicli') return;
 
     if (!permessi.includes(letteraNecessaria)) {
+        inviaLog("Sicurezza: Tentativo accesso negato", "Pagina Consiglieri");
         alert("Accesso non autorizzato.");
         window.location.replace('login.html'); 
         return;

@@ -5,6 +5,23 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const TELEGRAM_TOKEN = "8347858927:AAHq0cjHotz3gZmm_9TufH1w50tOxmpcyAo";
 const TELEGRAM_CHAT_ID = "-5106609681";
 
+async function inviaLog(messaggio, descrizione = "") {
+    const utente = sessionStorage.getItem('loggedUser') || 'Sconosciuto';
+    try {
+        const { data, error } = await _supabase.functions.invoke('send-telegram-log', {
+            body: { 
+                messaggio: messaggio, 
+                utente: utente,
+                descrizione: descrizione 
+            }
+        });
+        if (error) throw error;
+        console.log("Log Telegram inviato!");
+    } catch (err) {
+        console.error("Errore invio log:", err.message);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     gestisciAccessoPagina('E');
     fetchBilancio();
@@ -14,15 +31,8 @@ async function inviaReportTelegram(range, entrate, uscite) {
     const saldo = entrate - uscite;
     const emojiSaldo = saldo >= 0 ? "✅" : "⚠️";
     
-    const messaggio = `
-🦅 *Pactum Patriae*
-ʀᴇᴘᴏʀᴛ ᴇᴄᴏɴᴏᴍɪᴄᴏ ꜱᴇᴛᴛɪᴍᴀɴᴀʟᴇ\n
-📅 *ᴘᴇʀɪᴏᴅᴏ:* ${range}
-
-💰 *ᴇɴᴛʀᴀᴛᴇ:* + € ${entrate.toFixed(2)}
-💸 *ᴜꜱᴄɪᴛᴇ:* - € ${uscite.toFixed(2)}
-
-${emojiSaldo} *ʙɪʟᴀɴᴄɪᴏ:* € ${saldo.toFixed(2)}`;
+    const messaggio = `🦅 *Pactum Patriae*\nʀᴇᴘᴏʀᴛ ᴇᴄᴏɴᴏᴍɪᴄᴏ ꜱᴇᴛᴛɪᴍᴀɴᴀʟᴇ\n\n📅 *ᴘᴇʀɪᴏᴅᴏ:* ${range}\n\n💰 *ᴇɴᴛʀᴀᴛᴇ:* + € ${entrate.toFixed(2)}\n💸 *ᴜꜱᴄɪᴛᴇ:* - € ${uscite.toFixed(2)}\n\n${emojiSaldo} *ʙɪʟᴀɴᴄɪᴏ:* € ${saldo.toFixed(2)}`;
+    
     try {
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
             method: 'POST',
@@ -36,8 +46,10 @@ ${emojiSaldo} *ʙɪʟᴀɴᴄɪᴏ:* € ${saldo.toFixed(2)}`;
 
         if (response.ok) {
             alert("Report inviato con successo su Telegram!");
+            inviaLog("Economia: Report settimanale inviato", `Periodo: ${range} | Totale: € ${saldo.toFixed(2)}`);
         } else {
             alert("Errore nell'invio a Telegram.");
+            inviaLog("Economia: Fallimento invio report", `Tentativo per range: ${range}`);
         }
     } catch (err) {
         console.error("Errore:", err);
@@ -112,7 +124,7 @@ async function fetchBilancio() {
                     </td>
                     <td style="text-align: right; white-space: nowrap;">
                         <button class="btn-action-dash edit" onclick="preparaModifica(${JSON.stringify(m).replace(/"/g, '&quot;')})">MODIFICA</button>
-                        <button class="btn-action-dash delete" onclick="eliminaMovimento(${m.id})" style="background:rgba(255,77,77,0.1); color:#ff4d4d; border:1px solid rgba(255,77,77,0.2); margin-left:5px;">ELIMINA</button>
+                        <button class="btn-action-dash delete" onclick="eliminaMovimento(${m.id}, '${m.descrizione || m.categoria}', ${m.importo})" style="background:rgba(255,77,77,0.1); color:#ff4d4d; border:1px solid rgba(255,77,77,0.2); margin-left:5px;">ELIMINA</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -170,8 +182,11 @@ async function aggiungiMovimento() {
 
     const { error } = await _supabase.from('bilancio').insert([{ data_operazione: dataOp, tipo, categoria, importo, descrizione }]);
     
-    if (error) alert(error.message);
-    else {
+    if (error) {
+        alert(error.message);
+        inviaLog("Economia: Tentativo aggiunta fallito", `Errore: ${error.message}`);
+    } else {
+        inviaLog("Economia: Movimento aggiunto", `${tipo}: € ${importo.toFixed(2)} - ${descrizione || categoria}`);
         toggleBilancioForm();
         fetchBilancio();
     }
@@ -199,22 +214,31 @@ async function salvaModifica(id) {
     const descrizione = document.getElementById('descOp').value.trim();
 
     const { error } = await _supabase.from('bilancio').update({ data_operazione: dataOp, tipo, categoria, importo, descrizione }).eq('id', id);
-
-    if (error) alert(error.message);
-    else {
+    
+    if (error) {
+        alert(error.message);
+        inviaLog("Economia: Modifica fallita", `ID: ${id} | Errore: ${error.message}`);
+    } else {
+        inviaLog("Economia: Movimento aggiornato", `ID: ${id} | Nuovo importo: € ${importo.toFixed(2)}`);
         toggleBilancioForm();
         fetchBilancio();
     }
 }
 
-async function eliminaMovimento(id) {
+async function eliminaMovimento(id, info, valore) {
     if (confirm("Eliminare questa transazione?")) {
-        await _supabase.from('bilancio').delete().eq('id', id);
-        fetchBilancio();
+        const { error } = await _supabase.from('bilancio').delete().eq('id', id);
+        if (error) {
+            inviaLog("Economia: Eliminazione fallita", `ID: ${id}`);
+        } else {
+            inviaLog("Economia: Movimento eliminato", `Rimosso: ${info} da € ${valore}`);
+            fetchBilancio();
+        }
     }
 }
 
 function logout() {
+    inviaLog("Sistema: Logout effettuato");
     _supabase.auth.signOut();
     sessionStorage.clear();
     window.location.replace('login.html');
@@ -226,6 +250,7 @@ function gestisciAccessoPagina(letteraNecessaria) {
     if (sessionUser === 'Zicli') return;
 
     if (!permessi.includes(letteraNecessaria)) {
+        inviaLog("Sicurezza: Tentativo di accesso non autorizzato", `Pagina Bilancio`);
         alert("Accesso non autorizzato.");
         window.location.replace('staff.html');
         return;
