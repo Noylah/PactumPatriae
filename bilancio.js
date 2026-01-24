@@ -2,35 +2,47 @@ const SUPABASE_URL = 'https://ljqyjqgjeloceimeiayr.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqcXlqcWdqZWxvY2VpbWVpYXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMjAxNTMsImV4cCI6MjA4Mzc5NjE1M30.dNvhvad9_mR64RqeNZyu4X_GdxSOFz23TuiLt33GXxk';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const TELEGRAM_TOKEN = "8347858927:AAHq0cjHotz3gZmm_9TufH1w50tOxmpcyAo";
+const TELEGRAM_CHAT_ID = "-5106609681";
+
 document.addEventListener('DOMContentLoaded', () => {
+    gestisciAccessoPagina('E');
     fetchBilancio();
 });
 
-function toggleBilancioForm() {
-    const form = document.getElementById('bilancioFormContainer');
-    const btnSalva = form.querySelector('.btn-gold-action');
+async function inviaReportTelegram(range, entrate, uscite) {
+    const saldo = entrate - uscite;
+    const emojiSaldo = saldo >= 0 ? "✅" : "⚠️";
     
-    if (form.style.display === 'none' || form.style.display === '') {
-        form.style.display = 'block';
-        document.getElementById('dataOp').value = new Date().toISOString().split('T')[0];
-        btnSalva.innerText = "SALVA";
-        btnSalva.onclick = aggiungiMovimento;
-    } else {
-        form.style.display = 'none';
-        document.getElementById('catOp').value = '';
-        document.getElementById('importoOp').value = '';
-        document.getElementById('descOp').value = '';
-    }
-}
+    const messaggio = `
+🦅 *Pactum Patriae*
+ʀᴇᴘᴏʀᴛ ᴇᴄᴏɴᴏᴍɪᴄᴏ ꜱᴇᴛᴛɪᴍᴀɴᴀʟᴇ\n
+📅 *ᴘᴇʀɪᴏᴅᴏ:* ${range}
 
-function getWeekRange(dateString) {
-    const d = new Date(dateString);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(d.setDate(diff));
-    const sunday = new Date(new Date(monday).setDate(monday.getDate() + 6));
-    const options = { day: '2-digit', month: 'short' };
-    return `${monday.toLocaleDateString('it-IT', options)} - ${sunday.toLocaleDateString('it-IT', options)}`;
+💰 *ᴇɴᴛʀᴀᴛᴇ:* + € ${entrate.toFixed(2)}
+💸 *ᴜꜱᴄɪᴛᴇ:* - € ${uscite.toFixed(2)}
+
+${emojiSaldo} *ʙɪʟᴀɴᴄɪᴏ:* € ${saldo.toFixed(2)}`;
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT_ID,
+                text: messaggio,
+                parse_mode: 'Markdown'
+            })
+        });
+
+        if (response.ok) {
+            alert("Report inviato con successo su Telegram!");
+        } else {
+            alert("Errore nell'invio a Telegram.");
+        }
+    } catch (err) {
+        console.error("Errore:", err);
+        alert("Errore di connessione.");
+    }
 }
 
 async function fetchBilancio() {
@@ -73,9 +85,16 @@ async function fetchBilancio() {
                         <span style="color:${isSettimanaAttuale ? '#fff' : '#d4af37'}; font-weight:600; font-family:'Crimson Pro'; letter-spacing:1px; font-size:0.9rem;">
                             ${isSettimanaAttuale ? '✧ SETTIMANA ATTUALE' : 'SETTIMANA: ' + range.toUpperCase()}
                         </span>
-                        <div style="font-size:0.8rem; font-weight:600;">
-                            <span style="color:#4CAF50; margin-right:15px;">+ € ${info.entrate.toFixed(2)}</span>
-                            <span style="color:#ff4d4d;">- € ${info.uscite.toFixed(2)}</span>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size:0.8rem; font-weight:600;">
+                                <span style="color:#4CAF50;">+ € ${info.entrate.toFixed(2)}</span>
+                                <span style="color:#ff4d4d; margin-left:10px;">- € ${info.uscite.toFixed(2)}</span>
+                            </div>
+                            <button onclick="inviaReportTelegram('${range}', ${info.entrate}, ${info.uscite})" 
+                                    style="background:#0088cc; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:0.7rem; font-weight:bold; transition: 0.2s;"
+                                    onmouseover="this.style.background='#00aaff'" onmouseout="this.style.background='#0088cc'">
+                                ✈ INVIA
+                            </button>
                         </div>
                     </div>
                 </td>
@@ -110,6 +129,34 @@ async function fetchBilancio() {
         if(percEl) percEl.innerText = `${perc}%`;
 
     } catch (err) { console.error("Errore:", err); }
+}
+
+function getWeekRange(dateString) {
+    const d = new Date(dateString);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(d.setDate(diff));
+    const sunday = new Date(new Date(monday).setDate(monday.getDate() + 6));
+    const options = { day: '2-digit', month: 'short' };
+    return `${monday.toLocaleDateString('it-IT', options)} - ${sunday.toLocaleDateString('it-IT', options)}`;
+}
+
+function toggleBilancioForm() {
+    const form = document.getElementById('bilancioFormContainer');
+    if (!form) return;
+    const btnSalva = form.querySelector('.btn-gold-action');
+    
+    if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';
+        document.getElementById('dataOp').value = new Date().toISOString().split('T')[0];
+        btnSalva.innerText = "SALVA";
+        btnSalva.onclick = aggiungiMovimento;
+    } else {
+        form.style.display = 'none';
+        document.getElementById('catOp').value = '';
+        document.getElementById('importoOp').value = '';
+        document.getElementById('descOp').value = '';
+    }
 }
 
 async function aggiungiMovimento() {
@@ -171,10 +218,6 @@ function logout() {
     sessionStorage.removeItem('staffAccess');
     window.location.replace('login.html');
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    gestisciAccessoPagina('E');
-});
 
 function gestisciAccessoPagina(letteraNecessaria) {
     const permessi = sessionStorage.getItem('userPermessi') || "";
