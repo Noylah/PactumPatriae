@@ -181,7 +181,8 @@ async function salvaModifica(id) {
 }
 
 function logout() {
-    sessionStorage.clear(); 
+    _supabase.auth.signOut();
+    sessionStorage.clear();
     window.location.replace('login.html');
 }
 

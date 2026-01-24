@@ -335,7 +335,11 @@ ${puntiFormattati}
 }
 
 
-function logout() { sessionStorage.removeItem('staffAccess'); window.location.replace('login.html'); }
+function logout() {
+    _supabase.auth.signOut();
+    sessionStorage.clear();
+    window.location.replace('login.html');
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchRiunioni();

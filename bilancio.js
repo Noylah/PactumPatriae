@@ -215,7 +215,8 @@ async function eliminaMovimento(id) {
 }
 
 function logout() {
-    sessionStorage.removeItem('staffAccess');
+    _supabase.auth.signOut();
+    sessionStorage.clear();
     window.location.replace('login.html');
 }
 

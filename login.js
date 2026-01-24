@@ -19,32 +19,37 @@ async function handleLogin(event) {
     errorDisplay.style.display = "none";
 
     try {
-        const { data, error } = await _supabase
-            .from('staff_users') 
-            .select('username, password, permessi') 
-            .eq('username', usernameInput)
-            .eq('password', passwordInput)
-            .maybeSingle(); 
+        const emailFinta = `${usernameInput}@pactum.it`;
 
-        if (error) {
-            console.error("Errore Supabase:", error);
-            errorDisplay.innerText = "Errore tecnico di connessione.";
-            errorDisplay.style.display = "block";
-            return;
-        }
+        const { data: authData, error: authError } = await _supabase.auth.signInWithPassword({
+            email: emailFinta,
+            password: passwordInput
+        });
 
-        if (!data) {
+        if (authError) {
             errorDisplay.innerText = "Username o Password errati.";
             errorDisplay.style.display = "block";
             return;
         }
 
+        const { data: userData, error: userError } = await _supabase
+            .from('staff_users')
+            .select('username, permessi')
+            .eq('username', usernameInput)
+            .maybeSingle();
+
+        if (userError || !userData) {
+            errorDisplay.innerText = "Profilo non trovato nel database staff.";
+            errorDisplay.style.display = "block";
+            return;
+        }
+
         sessionStorage.setItem('staffAccess', 'true');
-        sessionStorage.setItem('loggedUser', data.username); 
-        sessionStorage.setItem('userPermessi', data.permessi || "");
+        sessionStorage.setItem('loggedUser', userData.username); 
+        sessionStorage.setItem('userPermessi', userData.permessi || "");
         
-        const p = data.permessi || "";
-        if (data.username === 'Zicli' || p.includes('C')) {
+        const p = userData.permessi || "";
+        if (userData.username === 'Zicli' || p.includes('C')) {
             window.location.replace('staff.html');
         } else if (p.includes('R')) {
             window.location.replace('riunioni.html');
