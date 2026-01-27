@@ -77,15 +77,20 @@
         </div>
     </section>
 
-    <div id="dynamicModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" onclick="closeModal()">&times;</span>
-            <span class="modal-badge" id="modalBadge">BADGE</span>
-            <h2 id="modalName">Titolo</h2>
-            <div id="modalBody" class="lore-text-box">
-                </div>
+<div id="dynamicModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        
+        <div id="modalImageContainer" style="display: none; margin-bottom: 25px;">
+            <img id="modalImage" src="" alt="News Image" style="width: 100%; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
         </div>
+
+        <span class="modal-badge" id="modalBadge">BADGE</span>
+        <h2 id="modalName">Titolo</h2>
+        <div id="modalBody" class="lore-text-box">
+            </div>
     </div>
+</div>
 
     <script>
         const contentData = {
@@ -101,9 +106,10 @@
             'news-1': {
                 title: "La Fondazione",
                 badge: "25 GENNAIO 2026",
+                image: "img/fondazione.jpg",
                 body: `
-                    <p>Pactum Patriae viene fondato il 25/01, in maniera ufficiale, si presenta come alternativa all'egemonia delle attuali forze demagogiche, essendosi rese contrarie al bene dei valori e delle tradizioni della nostra amata Patria.</p>
-                    <p>Andrea Isidoro Zicli fa rinascere il Patto della Patria, un accordo per riunire tutti coloro che credono nella forza dell'unione come strumento di opposizione.</p>
+                    <p><strong>Pactum Patriae</strong> viene fondato il 25/01, in maniera ufficiale, si presenta come alternativa all'egemonia delle attuali forze demagogiche, essendosi rese contrarie al bene dei valori e delle tradizioni della nostra amata Patria.</p>
+                    <p>È per questo che <strong>Andrea Isidoro Zicli</strong> fa rincere il Patto della Patria, un accordo per riunire tutti coloro che credono nella forza dell'unione come strumento di opposizione, atto a far crescere il sentimento d'attrazione verso i valori che, sin dall'epoca dei nostri antenati, ci accumunano e pervadono.</p>
                     <p>Cos'aspetti? Siamo noi che aspettiamo te! <br>Unisciti ora, fai riecheggiare il tuo credo. <strong>Per la Patria!</strong></p>
                 `
             }
@@ -117,15 +123,22 @@
                 document.getElementById('modalName').innerText = data.title;
                 document.getElementById('modalBadge').innerText = data.badge;
                 document.getElementById('modalBody').innerHTML = data.body;
+
+                const imgContainer = document.getElementById('modalImageContainer');
+                const imgTag = document.getElementById('modalImage');
+                if (data.image) {
+                    imgTag.src = data.image;
+                    imgContainer.style.display = 'block';
+                } else {
+                    imgContainer.style.display = 'none';
+                }
                 modal.classList.add('active');
                 document.body.style.overflow = 'hidden';
             }
         }
 
-        // Trigger Storia
         document.getElementById('openHistory').onclick = () => openModal('history');
 
-        // Trigger News
         function openNews(id) { openModal(id); }
 
         function closeModal() {
