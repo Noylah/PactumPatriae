@@ -1,21 +1,68 @@
 const _supabase = supabase.createClient('https://ljqyjqgjeloceimeiayr.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqcXlqcWdqZWxvY2VpbWVpYXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMjAxNTMsImV4cCI6MjA4Mzc5NjE1M30.dNvhvad9_mR64RqeNZyu4X_GdxSOFz23TuiLt33GXxk');
 
-const TELEGRAM_TOKEN = "8347858927:AAHq0cjHotz3gZmm_9TufH1w50tOxmpcyAo";
-const TELEGRAM_CHAT_ID = "-5106609681";
+const TELEGRAM_CHAT_ID = "-1003653282093";
+
+(async function protezioneTotale() {
+    const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
+
+    if (sessionError || !session) {
+        window.location.replace('login.html');
+        return;
+    }
+
+    try {
+        const emailUtente = session.user.email;
+        const usernameDaCercare = emailUtente.split('@')[0];
+
+        const { data: profilo, error: dbError } = await _supabase
+            .from('staff_users')
+            .select('permessi')
+            .eq('username', usernameDaCercare) 
+            .single();
+
+        if (dbError || !profilo) {
+            console.error("Dati mancanti per lo username:", usernameDaCercare);
+            alert("Errore: Il tuo account non è censito nella tabella staff_users.");
+            window.location.replace('login.html');
+            return;
+        }
+
+        const paginaCorrente = window.location.pathname.split('/').pop();
+        const mappePermessi = { 
+            'staff.html': 'C',    
+            'riunioni.html': 'R', 
+            'bilancio.html': 'E'  
+        };
+        
+        const letteraNecessaria = mappePermessi[paginaCorrente];
+
+        if (letteraNecessaria && !profilo.permessi.includes(letteraNecessaria)) {
+            alert("Accesso negato: non hai i permessi necessari.");
+            window.location.replace('login.html');
+            return;
+        }
+
+        document.body.style.visibility = "visible";
+        document.body.style.opacity = "1";
+
+    } catch (err) {
+        console.error("Errore critico:", err);
+        window.location.replace('login.html');
+    }
+})();
 
 async function inviaLog(messaggio, descrizione = "") {
-    const utente = sessionStorage.getItem('loggedUser') || 'Sconosciuto';
     try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        
         await _supabase.functions.invoke('send-telegram-log', {
-            body: { 
-                messaggio: messaggio, 
-                utente: utente,
-                descrizione: descrizione 
+            body: { messaggio, descrizione }, 
+            headers: {
+                Authorization: `Bearer ${session?.access_token}`
             }
         });
-        console.log("Log Telegram inviato!");
     } catch (err) {
-        console.error("Errore invio log:", err.message);
+        console.error("Errore log:", err.message);
     }
 }
 
@@ -28,25 +75,35 @@ async function inviaOdGTelegram(data, presidiata, odgRaw) {
 
     const puntiPuntati = odgRaw.split('\n')
         .filter(riga => riga.trim() !== "") 
-        .map(riga => `• ${riga.trim()}`) 
+        .map(riga => `• ${riga.trim()}  `) 
         .join('\n'); 
 
-    const messaggio = `🦅 *Pactum Patriae*\n` + `ᴏʀᴅɪɴᴇ ᴅᴇʟ ɢɪᴏʀɴᴏ\n\n` + `🏛 *ᴅᴀᴛᴀ:* ${dataFormattata}\n` + `👤 *ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:* ${presidiata}\n\n` + `📝 *ᴘᴜɴᴛɪ ᴅɪꜱᴄᴜꜱꜱɪᴏɴᴇ:\n*${puntiPuntati}`
+    const messaggio = `🦅 *Pactum Patriae*
+ᴏʀᴅɪɴᴇ ᴅᴇʟ ɢɪᴏʀɴᴏ\n
+🏛 *ᴅᴀᴛᴀ:* ${dataFormattata}
+👤 *ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:* ${presidiata}\n
+📝 *ᴘᴜɴᴛɪ ᴅɪꜱᴄᴜꜱꜱɪᴏɴᴇ:*
+${puntiPuntati}`
 
     try {
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                chat_id: TELEGRAM_CHAT_ID, 
-                text: messaggio, 
-                parse_mode: 'Markdown' 
-            })
+        const { data: responseData, error } = await _supabase.functions.invoke('send-telegram-broadcast', {
+            body: { 
+                messaggio: messaggio, 
+                parse_mode: 'Markdown',  
+                chat_id: TELEGRAM_CHAT_ID 
+            }
         });
+
+        if (error) throw error;
+
         alert("Inviato su Telegram!");
         inviaLog("Riunioni: OdG inviato su Telegram", `Data: ${dataFormattata} | Presieduta da: ${presidiata}`);
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        console.error("Errore invio Edge Function:", err); 
+        alert("Errore durante l'invio.");
+    }
 }
+
 
 async function salvaComeOdG() {
     const dataVal = document.getElementById('dataRiunione').value;
@@ -346,17 +403,33 @@ async function inviaResocontoTelegram(data, presidiata, odgRaw) {
         puntiFormattati += `• ${emoji} ${testo}${stato ? ` (*${stato}*)` : ''}\n`;
     });
 
-    const messaggio = `🦅 *Pactum Patriae*\nʀᴇꜱᴏᴄᴏɴᴛᴏ ʀɪᴜɴɪᴏɴᴇ ᴀꜱꜱᴇᴍʙʟᴇᴀ\n🏛 *ᴅᴀᴛᴀ:* ${dataFormattata}\n👤 *ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:* ${presidiata}\n📝 *ᴇꜱɪᴛᴏ ᴘᴜɴᴛɪ ᴅɪꜱᴄᴜꜱꜱɪ:*\n${puntiFormattati}`;
+    const messaggio = 
+    `🦅 *Pactum Patriae*
+ʀᴇꜱᴏᴄᴏɴᴛᴏ ʀɪᴜɴɪᴏɴᴇ ᴀꜱꜱᴇᴍʙʟᴇᴀ
+    
+🏛 *ᴅᴀᴛᴀ:* ${dataFormattata}
+👤 *ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:* ${presidiata}
+    
+📝 *ᴇꜱɪᴛᴏ ᴘᴜɴᴛɪ ᴅɪꜱᴄᴜꜱꜱɪ:*
+${puntiFormattati}`;
 
     try {
-        await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: messaggio, parse_mode: 'Markdown' })
+        const { data: responseData, error } = await _supabase.functions.invoke('send-telegram-broadcast', {
+            body: { 
+                messaggio: messaggio, 
+                parse_mode: 'Markdown',
+                chat_id: TELEGRAM_CHAT_ID 
+            }
         });
+
+        if (error) throw error;
+
         alert("Resoconto inviato su Telegram!");
         inviaLog("Riunioni: Resoconto inviato su Telegram", `Data: ${dataFormattata}`);
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        console.error("Errore invio Edge Function:", err); 
+        alert("Errore durante l'invio del resoconto.");
+    }
 }
 
 function logout() {

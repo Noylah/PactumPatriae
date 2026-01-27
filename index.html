@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,600;1,600&family=Public+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="img/favicon.png" type="image/png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="logic.js"></script>
 </head>
 <body>
@@ -26,7 +27,6 @@
                 <li><a href="contatti.html" class="menu-link">Contatti</a></li>
             </ul>
         </div>
-
         <div class="nav-right">
             <a href="https://t.me/PactumPatriaeNT" class="link-telegram">Telegram</a>
             <a href="login.html" class="link-telegram">Staff</a>
@@ -39,7 +39,6 @@
             <span class="badge">ZEROROLEPLAY</span>
             <h1>Pactum Patriae</h1>
             <p>Prima la patria!</p>
-            
             <div class="hero-buttons">
                 <a href="affiliati.html" class="btn-hero btn-gold">Diventa un Affiliato</a>
                 <button id="openHistory" class="btn-hero btn-transparent">La Storia</button>
@@ -50,140 +49,96 @@
     <section class="news-section">
         <h2>Notizie</h2>
         <div class="news-grid">
-            <article class="news-card">
-                <div class="news-placeholder">placeholder</div>
+            <article class="news-card" onclick="openNews('news-1')">
+                <div class="news-image-container">
+                    <img src="img/fondazione.jpg" alt="Fondazione Pactum Patriae" class="news-img-top">
+                </div>
                 <div class="news-info">
-                    <h3>Titolo Notizia</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+                    <h3>La Fondazione</h3>
+                    <p>Il <strong>25/01/2026</strong> nasce Pactum Patriae, aderisci al nostro cammino.</p>
                 </div>
             </article>
 
             <article class="news-card">
-                <div class="news-placeholder">placeholder</div>
+                <div class="news-placeholder">PROSSIMAMENTE</div>
                 <div class="news-info">
-                    <h3>Titolo Notizia</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+                    <h3>Prossimamente</h3>
+                    <p>Segui il nostro canale per costanti aggiornamenti!</p>
                 </div>
             </article>
 
             <article class="news-card">
-                <div class="news-placeholder">placeholder</div>
+                <div class="news-placeholder">PROSSIMAMENTE</div>
                 <div class="news-info">
-                     <h3>Titolo Notizia</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                </div>
-            </article>
-
-            <article class="news-card">
-                <div class="news-placeholder">placeholder</div>
-                <div class="news-info">
-                    <h3>Titolo Notizia</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                </div>
-            </article>
-
-            <article class="news-card">
-                <div class="news-placeholder">placeholder</div>
-                <div class="news-info">
-                    <h3>Titolo Notizia</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                </div>
-            </article>
-
-            <article class="news-card">
-                <div class="news-placeholder">placeholder</div>
-                <div class="news-info">
-                    <h3>Titolo Notizia</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+                    <h3>Prossimamente</h3>
+                    <p>Segui il nostro canale per costanti aggiornamenti!</p>
                 </div>
             </article>
         </div>
     </section>
-    <footer class="main-footer">
-<div class="footer-credits">
-        Developed by <a href="https://t.me/sconfittoo" target="_blank" class="noyla-link">NOYLA</a>
-    </div>
-    
-    <div class="footer-disclaimer-box">
-        <span class="gdr-warning">Disclaimer Progetto Roleplay</span>
-        <p>
-            Questo sito è una creazione fittizia destinata esclusivamente a scopi di Gioco di Ruolo. 
-            Tutti i contenuti sono opera di fantasia e non hanno riscontri nella realtà.
-        </p>
-        <p>
-            Progetto indipendente: non siamo affiliati, sponsorizzati o collegati a <strong>ZeroRoleplay</strong>. 
-            I diritti dei marchi citati appartengono ai legittimi proprietari.
-        </p>
-        <p style="font-style: italic; opacity: 0.6;">
-            Privacy: I dati (Nickname, Telegram, IP) sono trattati solo per sicurezza interna e prevenzione abusi.
-        </p>
-    </div>
-    </footer>
-    <div id="historyModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" id="closeHistory">&times;</span>
-        <span class="modal-badge">CRONACHE DEL PARTITO</span>
-        <h2>La Nostra Storia</h2>
-        
-        <div class="info-row">
-            <strong>Data di Fondazione</strong>
-            <span>15 Gennaio 2026</span>
-        </div>
 
-        <div class="lore-text-box" style="text-align: left; margin-top: 20px; max-height: 400px; overflow-y: auto; padding-right: 10px;">
-            <p style="color: rgba(255, 255, 255, 0.9); line-height: 1.7; margin-bottom: 15px;">
-                Le radici di <strong>Pactum Patriae</strong> affondano nell'8 luglio 2025, quando i vertici di <em>Prima l'Orizzonte</em> e forze indipendenti dell'ex <em>Progresso Riformista</em> diedero vita a <strong>Novum Pactum</strong>, con l'obiettivo di restaurare l'integrità politica di un tempo.
-            </p>
-            
-            <p style="color: rgba(255, 255, 255, 0.9); line-height: 1.7; margin-bottom: 15px;">
-                Dopo la vittoria alle presidenziali di agosto e il successo elettorale di settembre con ben <strong>106 voti</strong> e 4 seggi in Congresso, il percorso subì una brusca interruzione a ottobre a causa di accuse infamanti verso la presidenza, portando allo scioglimento forzato.
-            </p>
-
-            <p style="color: rgba(255, 255, 255, 0.9); line-height: 1.7; margin-bottom: 15px;">
-                Il <strong>15 gennaio 2026</strong> segna la rinascita definitiva: nasce Pactum Patriae. La nostra missione è ribaltare una classe politica corrotta e clientelare, agendo nell'unico interesse della Nazione.
-            </p>
-
-            <p style="color: var(--gold); font-style: italic; font-weight: 600; text-align: center; margin-top: 20px;">
-                Aderisci anche tu al cammino del riassestamento politico. <br>Prima la Patria!
-            </p>
+    <div id="dynamicModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <span class="modal-badge" id="modalBadge">BADGE</span>
+            <h2 id="modalName">Titolo</h2>
+            <div id="modalBody" class="lore-text-box">
+                </div>
         </div>
     </div>
-</div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const modal = document.getElementById('historyModal');
-            const openBtn = document.getElementById('openHistory');
-            const closeBtn = document.getElementById('closeHistory');
-
-            if (openBtn && modal) {
-                openBtn.onclick = (e) => {
-                    e.preventDefault();
-                    modal.classList.add('active');
-                    document.body.style.overflow = 'hidden';
-                };
+        const contentData = {
+            'history': {
+                title: "La Nostra Storia",
+                badge: "CRONACHE DEL PARTITO",
+                body: `
+                    <p>Le radici di <strong>Pactum Patriae</strong> affondano nell'8 luglio 2025, quando i vertici di Prima l'Orizzonte e forze indipendenti dell'ex Progresso Riformista diedero vita a Novum Pactum, con l'obiettivo di restaurare l'integrità politica di un tempo.</p>
+                    <p>Dopo la vittoria alle presidenziali di agosto e il successo elettorale di settembre con ben 106 voti e 4 seggi in Congresso, il percorso subì una brusca interruzione a ottobre a causa di accuse infamanti verso la presidenza, portando allo scioglimento forzato.</p>
+                    <p>Il 24 gennaio 2026 segna la rinascita definitiva: nasce <strong>Pactum Patriae</strong> dalla ripartenza politica dell'ex <strong>Presidente Generale Zicli</strong> e il confluimento della Lega. La nostra missione è ribaltare una classe politica corrotta e clientelare, agendo nell'unico interesse della Nazione.</p>
+                `
+            },
+            'news-1': {
+                title: "La Fondazione",
+                badge: "25 GENNAIO 2026",
+                body: `
+                    <p>Pactum Patriae viene fondato il 25/01, in maniera ufficiale, si presenta come alternativa all'egemonia delle attuali forze demagogiche, essendosi rese contrarie al bene dei valori e delle tradizioni della nostra amata Patria.</p>
+                    <p>Andrea Isidoro Zicli fa rinascere il Patto della Patria, un accordo per riunire tutti coloro che credono nella forza dell'unione come strumento di opposizione.</p>
+                    <p>Cos'aspetti? Siamo noi che aspettiamo te! <br>Unisciti ora, fai riecheggiare il tuo credo. <strong>Per la Patria!</strong></p>
+                `
             }
+        };
 
-            const closeModal = () => {
-                modal.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            };
+        const modal = document.getElementById('dynamicModal');
 
-            if (closeBtn) {
-                closeBtn.onclick = closeModal;
+        function openModal(type) {
+            const data = contentData[type];
+            if (data) {
+                document.getElementById('modalName').innerText = data.title;
+                document.getElementById('modalBadge').innerText = data.badge;
+                document.getElementById('modalBody').innerHTML = data.body;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
             }
+        }
 
-            window.onclick = (event) => {
-                if (event.target === modal) {
-                    closeModal();
-                }
-            };
+        // Trigger Storia
+        document.getElementById('openHistory').onclick = () => openModal('history');
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === "Escape" && modal.classList.contains('active')) {
-                    closeModal();
-                }
-            });
+        // Trigger News
+        function openNews(id) { openModal(id); }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        window.onclick = (event) => {
+            if (event.target === modal) closeModal();
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") closeModal();
         });
     </script>
 </body>

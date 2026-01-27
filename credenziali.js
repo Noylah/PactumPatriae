@@ -4,11 +4,63 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_AUTORIZZATO = 'Zicli'; 
 
-async function inviaLog(messaggio, descrizione = "") {
-    const utente = sessionStorage.getItem('loggedUser') || 'Sconosciuto';
+(async function protezioneTotale() {
+    const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
+
+    if (sessionError || !session) {
+        window.location.replace('login.html');
+        return;
+    }
+
     try {
+        const emailUtente = session.user.email;
+        const usernameDaCercare = emailUtente.split('@')[0];
+
+        const { data: profilo, error: dbError } = await _supabase
+            .from('staff_users')
+            .select('permessi')
+            .eq('username', usernameDaCercare) 
+            .single();
+
+        if (dbError || !profilo) {
+            console.error("Dati mancanti per lo username:", usernameDaCercare);
+            alert("Errore: Il tuo account non è censito nella tabella staff_users.");
+            window.location.replace('login.html');
+            return;
+        }
+
+        const paginaCorrente = window.location.pathname.split('/').pop();
+        const mappePermessi = { 
+            'staff.html': 'C',    
+            'riunioni.html': 'R', 
+            'bilancio.html': 'E'  
+        };
+        
+        const letteraNecessaria = mappePermessi[paginaCorrente];
+
+        if (letteraNecessaria && !profilo.permessi.includes(letteraNecessaria)) {
+            alert("Accesso negato: non hai i permessi necessari.");
+            window.location.replace('login.html');
+            return;
+        }
+
+        document.body.style.visibility = "visible";
+        document.body.style.opacity = "1";
+
+    } catch (err) {
+        console.error("Errore critico:", err);
+        window.location.replace('login.html');
+    }
+})();
+async function inviaLog(messaggio, descrizione = "") {
+    try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        
         await _supabase.functions.invoke('send-telegram-log', {
-            body: { messaggio, utente, descrizione }
+            body: { messaggio, descrizione }, 
+            headers: {
+                Authorization: `Bearer ${session?.access_token}`
+            }
         });
     } catch (err) {
         console.error("Errore log:", err.message);

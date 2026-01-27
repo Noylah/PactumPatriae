@@ -2,23 +2,68 @@ const SUPABASE_URL = 'https://ljqyjqgjeloceimeiayr.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqcXlqcWdqZWxvY2VpbWVpYXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMjAxNTMsImV4cCI6MjA4Mzc5NjE1M30.dNvhvad9_mR64RqeNZyu4X_GdxSOFz23TuiLt33GXxk';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const TELEGRAM_TOKEN = "8347858927:AAHq0cjHotz3gZmm_9TufH1w50tOxmpcyAo";
-const TELEGRAM_CHAT_ID = "-5106609681";
+
+(async function protezioneTotale() {
+    const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
+
+    if (sessionError || !session) {
+        window.location.replace('login.html');
+        return;
+    }
+
+    try {
+        const emailUtente = session.user.email;
+        const usernameDaCercare = emailUtente.split('@')[0];
+
+        const { data: profilo, error: dbError } = await _supabase
+            .from('staff_users')
+            .select('permessi')
+            .eq('username', usernameDaCercare) 
+            .single();
+
+        if (dbError || !profilo) {
+            console.error("Dati mancanti per lo username:", usernameDaCercare);
+            alert("Errore: Il tuo account non è censito nella tabella staff_users.");
+            window.location.replace('login.html');
+            return;
+        }
+
+        const paginaCorrente = window.location.pathname.split('/').pop();
+        const mappePermessi = { 
+            'staff.html': 'C',    
+            'riunioni.html': 'R', 
+            'bilancio.html': 'E'  
+        };
+        
+        const letteraNecessaria = mappePermessi[paginaCorrente];
+
+        if (letteraNecessaria && !profilo.permessi.includes(letteraNecessaria)) {
+            alert("Accesso negato: non hai i permessi necessari.");
+            window.location.replace('login.html');
+            return;
+        }
+
+        document.body.style.visibility = "visible";
+        document.body.style.opacity = "1";
+
+    } catch (err) {
+        console.error("Errore critico:", err);
+        window.location.replace('login.html');
+    }
+})();
 
 async function inviaLog(messaggio, descrizione = "") {
-    const utente = sessionStorage.getItem('loggedUser') || 'Sconosciuto';
     try {
-        const { data, error } = await _supabase.functions.invoke('send-telegram-log', {
-            body: { 
-                messaggio: messaggio, 
-                utente: utente,
-                descrizione: descrizione 
+        const { data: { session } } = await _supabase.auth.getSession();
+        
+        await _supabase.functions.invoke('send-telegram-log', {
+            body: { messaggio, descrizione }, 
+            headers: {
+                Authorization: `Bearer ${session?.access_token}`
             }
         });
-        if (error) throw error;
-        console.log("Log Telegram inviato!");
     } catch (err) {
-        console.error("Errore invio log:", err.message);
+        console.error("Errore log:", err.message);
     }
 }
 
@@ -34,26 +79,25 @@ async function inviaReportTelegram(range, entrate, uscite) {
     const messaggio = `🦅 *Pactum Patriae*\nʀᴇᴘᴏʀᴛ ᴇᴄᴏɴᴏᴍɪᴄᴏ ꜱᴇᴛᴛɪᴍᴀɴᴀʟᴇ\n\n📅 *ᴘᴇʀɪᴏᴅᴏ:* ${range}\n\n💰 *ᴇɴᴛʀᴀᴛᴇ:* + € ${entrate.toFixed(2)}\n💸 *ᴜꜱᴄɪᴛᴇ:* - € ${uscite.toFixed(2)}\n\n${emojiSaldo} *ʙɪʟᴀɴᴄɪᴏ:* € ${saldo.toFixed(2)}`;
     
     try {
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: TELEGRAM_CHAT_ID,
-                text: messaggio,
-                parse_mode: 'Markdown'
-            })
+        const { data, error } = await _supabase.functions.invoke('send-telegram-broadcast', {
+            body: { 
+                messaggio: messaggio,
+                parse_mode: 'Markdown',
+                chat_id: "-5106609681"
+            }
         });
 
-        if (response.ok) {
+        if (!error && data.ok) {
             alert("Report inviato con successo su Telegram!");
             inviaLog("Economia: Report settimanale inviato", `Periodo: ${range} | Totale: € ${saldo.toFixed(2)}`);
         } else {
-            alert("Errore nell'invio a Telegram.");
-            inviaLog("Economia: Fallimento invio report", `Tentativo per range: ${range}`);
+            throw new Error(error?.message || "Errore risposta Telegram");
         }
+
     } catch (err) {
-        console.error("Errore:", err);
-        alert("Errore di connessione.");
+        console.error("Errore invio report:", err);
+        alert("Errore nell'invio a Telegram via Edge Function.");
+        inviaLog("Economia: Fallimento invio report", `Tentativo per range: ${range}`);
     }
 }
 

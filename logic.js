@@ -1,11 +1,28 @@
-const TELEGRAM_TOKEN = "8347858927:AAHq0cjHotz3gZmm_9TufH1w50tOxmpcyAo";
-const TELEGRAM_CHAT_ID = "-5106609681";
+const TARGET_CHAT_ID = "-1003526824346"; 
+const SUPABASE_URL = 'https://ljqyjqgjeloceimeiayr.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqcXlqcWdqZWxvY2VpbWVpYXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMjAxNTMsImV4cCI6MjA4Mzc5NjE1M30.dNvhvad9_mR64RqeNZyu4X_GdxSOFz23TuiLt33GXxk';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function inviaLog(messaggio, descrizione = "") {
+    try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        
+        await _supabase.functions.invoke('send-telegram-log', {
+            body: { messaggio, descrizione }, 
+            headers: {
+                Authorization: `Bearer ${session?.access_token}`
+            }
+        });
+    } catch (err) {
+        console.error("Errore log:", err.message);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const formAffiliati = document.querySelector('.affiliati-form');
 
     if (formAffiliati) {
-        formAffiliati.addEventListener('submit', function(e) {
+        formAffiliati.addEventListener('submit', async function(e) {
             e.preventDefault();
 
             let nickname = document.getElementById('nickname').value;
@@ -24,48 +41,47 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
             submitBtn.innerText = "Recupero IP...";
 
-            fetch('https://api.ipify.org?format=json')
-                .then(res => res.json())
-                .then(ipData => {
-                    const userIP = ipData.ip;
-                    const messaggio = `🦅 *Pactum Patriae*\nʀɪᴄʜɪᴇꜱᴛᴀ ᴅɪ ᴀꜰꜰɪʟɪᴀᴢɪᴏɴᴇ ᴛʀᴀᴍɪᴛᴇ ᴡᴇʙ\n\n• 👤 *ᴜꜱᴇʀɴᴀᴍᴇ*: ${cleanNickname}\n• 💬 *ᴛᴇʟᴇɢʀᴀᴍ*: ${cleanTelegram}\n• 🌐 *ɪᴘ*: \`${userIP}\``;
+            try {
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipRes.json();
+                const userIP = ipData.ip;
 
-                    submitBtn.innerText = "Invio in corso...";
+                const messaggio = `🦅 *Pactum Patriae*\nʀɪᴄʜɪᴇꜱᴛᴀ ᴅɪ ᴀꜰꜰɪʟɪᴀᴢɪᴏɴᴇ ᴛʀᴀᴍɪᴛᴇ ᴡᴇʙ\n\n• 👤 *ᴜꜱᴇʀɴᴀᴍᴇ*: ${cleanNickname}\n• 💬 *ᴛᴇʟᴇɢʀᴀᴍ*: ${cleanTelegram}`;
 
-                    return fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: TELEGRAM_CHAT_ID,
-                            text: messaggio,
-                            parse_mode: "Markdown"
-                        })
-                    });
-                })
-                .then(response => {
-                    if (response && response.ok) {
-                        const formBox = document.querySelector('.affiliati-form-box');
-                        formBox.innerHTML = `<div class="success-message-container">
-    <div class="success-card">
-        <div class="success-icon">✓</div>
-        <h3>Richiesta Inviata!</h3>
-        <p>I dati sono stati inviati con successo.</p>
-    </div>
-</div>`;
-                    } else if (response) {
-                        return response.json().then(data => {
-                            alert("Errore Telegram: " + data.description);
-                            submitBtn.disabled = false;
-                            submitBtn.innerText = "Invia Richiesta";
-                        });
+                submitBtn.innerText = "Invio in corso...";
+
+                const { data, error } = await _supabase.functions.invoke('send-telegram-broadcast', {
+                    body: {
+                        chat_id: TARGET_CHAT_ID,
+                        messaggio: messaggio,
+                        topic_id: 113,
+                        parse_mode: "Markdown"
                     }
-                })
-                .catch(error => {
-                    console.error(error);
-                    alert("Errore durante l'operazione.");
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = "Invia Richiesta";
                 });
+
+                if (error || (data && !data.ok)) {
+                    throw new Error(error?.message || data?.description || "Errore invio");
+                }
+
+                inviaLog("Affiliazioni: Nuova richiesta", `User: ${nickname} | IP: ${userIP}`);
+
+                const formBox = document.querySelector('.affiliati-form-box');
+                formBox.innerHTML = `
+                    <div class="success-message-container">
+                        <div class="success-card">
+                            <div class="success-icon">✓</div>
+                            <h3>Richiesta Inviata!</h3>
+                            <p>I dati sono stati inviati con successo.</p>
+                        </div>
+                    </div>`;
+
+            } catch (error) {
+                console.error(error);
+                inviaLog("Affiliazioni: Fallimento", `User: ${nickname} | Errore: ${error.message}`);
+                alert("Errore durante l'operazione.");
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Invia Richiesta";
+            }
         });
     }
 });
