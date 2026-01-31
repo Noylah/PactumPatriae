@@ -259,7 +259,7 @@ button.btn-hero {
 
 .news-section {
     padding: 100px 20px;
-    background-image: linear-gradient(rgba(16, 68, 105, 0.9), rgba(0, 0, 0, 0.8)), url('img/news-bg.jpg');
+    background-image: linear-gradient(rgba(16, 68, 105, 0.9), rgba(0, 0, 0, 0.8));
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -308,18 +308,26 @@ button.btn-hero {
 
 .news-placeholder {
     width: 100%;
-    height: 200px;
-    background-color: rgba(16, 68, 105, 0.5);
+    height: 200px; 
+    background: var(--blue);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--gold);
-    font-family: 'Crimson Pro', serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    border-bottom: 1px solid rgba(197, 160, 89, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.news-placeholder::before {
+    content: "";
+    width: 80px;
+    height: 80px;
+    background-image: url('img/LogoPP.jpg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    opacity: 0.8;
 }
 
 .news-info {
@@ -361,7 +369,7 @@ button.btn-hero {
     width: 100%;
     height: 200px; 
     overflow: hidden;
-    border-radius: 20px 20px 0 0; 
+    border-radius: 10px 10px 0 0; 
 }
 
 .news-img-top {
@@ -1176,6 +1184,15 @@ button.btn-hero {
     color: rgba(255, 255, 255, 0.6);
     font-size: 0.9rem;
     margin-bottom: 40px;
+}
+
+.input-edit-dash {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #d4af37;
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 0.9rem;
 }
 
 .input-group {

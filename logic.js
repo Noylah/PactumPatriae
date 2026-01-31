@@ -85,3 +85,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+async function caricaNotizieHome() {
+    const { data: notizie, error } = await _supabase
+        .from('notizie')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error("Errore caricamento notizie:", error);
+        return;
+    }
+
+    const grid = document.getElementById('news-grid');
+    if (!grid) return;
+
+    grid.innerHTML = ''; 
+
+    notizie.forEach(n => {
+        const article = document.createElement('article');
+        article.className = 'news-card';
+        
+        article.onclick = () => openDynamicModal(n);
+
+        const imageHTML = n.immagine_url 
+            ? `<img src="${n.immagine_url}" alt="${n.titolo}" class="news-img-top">`
+            : `<div class="news-placeholder"></div>`;
+
+        article.innerHTML = `
+            <div class="news-image-container">
+                ${imageHTML}
+            </div>
+            <div class="news-info">
+                <h3>${n.titolo}</h3>
+                <p>${n.sottotitolo || ''}</p>
+            </div>
+        `;
+        
+        grid.appendChild(article);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', caricaNotizieHome);

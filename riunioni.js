@@ -31,7 +31,9 @@ const TELEGRAM_CHAT_ID = "-1003653282093";
         const mappePermessi = { 
             'staff.html': 'C',    
             'riunioni.html': 'R', 
-            'bilancio.html': 'E'  
+            'bilancio.html': 'E',
+            'notizie.html': 'N',
+            'credenziali.html': 'A',
         };
         
         const letteraNecessaria = mappePermessi[paginaCorrente];

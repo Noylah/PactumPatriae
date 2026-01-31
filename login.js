@@ -69,6 +69,8 @@ async function handleLogin(event) {
             window.location.replace('riunioni.html');
         } else if (p.includes('E')) {
             window.location.replace('bilancio.html');
+        } else if (p.includes('N')) {
+            window.location.replace('notizie.html');
         } else if (p.includes('A')) {
             window.location.replace('credenziali.html');
         } else {

@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ʜᴏᴍᴇ • Pactum Patriae</title>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,600;1,600&family=Public+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,600;1,600&family=Public+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="img/favicon.png" type="image/png">
+    <meta name="referrer" content="no-referrer">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="logic.js"></script>
 </head>
 <body>
 
@@ -48,111 +48,72 @@
 
     <section class="news-section">
         <h2>Notizie</h2>
-        <div class="news-grid">
-            <article class="news-card" onclick="openNews('news-1')">
-                <div class="news-image-container">
-                    <img src="img/fondazione.jpg" alt="Fondazione Pactum Patriae" class="news-img-top">
-                </div>
-                <div class="news-info">
-                    <h3>La Fondazione</h3>
-                    <p>Il <strong>25/01/2026</strong> nasce Pactum Patriae, aderisci al nostro cammino.</p>
-                </div>
-            </article>
-
-            <article class="news-card">
-                <div class="news-placeholder">PROSSIMAMENTE</div>
-                <div class="news-info">
-                    <h3>Prossimamente</h3>
-                    <p>Segui il nostro canale per costanti aggiornamenti!</p>
-                </div>
-            </article>
-
-            <article class="news-card">
-                <div class="news-placeholder">PROSSIMAMENTE</div>
-                <div class="news-info">
-                    <h3>Prossimamente</h3>
-                    <p>Segui il nostro canale per costanti aggiornamenti!</p>
-                </div>
-            </article>
+        <div class="news-grid" id="news-grid">
+            <div class="loading-status" style="color: rgba(255,255,255,0.5); text-align: center; grid-column: 1/-1; padding: 40px;">
+                Caricamento comunicati in corso...
+            </div>
         </div>
     </section>
 
-<div id="dynamicModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" onclick="closeModal()">&times;</span>
-        
-        <div id="modalImageContainer" style="display: none; margin-bottom: 25px;">
-            <img id="modalImage" src="" alt="News Image" style="width: 100%; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
-        </div>
-
-        <span class="modal-badge" id="modalBadge">BADGE</span>
-        <h2 id="modalName">Titolo</h2>
-        <div id="modalBody" class="lore-text-box">
+    <div id="dynamicModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            
+            <div id="modalImageContainer" style="display: none; margin-bottom: 25px;">
+                <img id="modalImage" src="https://images.weserv.nl/?url=${encodeURIComponent(n.immagine_url)}" alt="News Image">
             </div>
+
+            <span class="modal-badge" id="modalBadge">BADGE</span>
+            <h2 id="modalName">Titolo</h2>
+            <div id="modalBody" class="lore-text-box"></div>
+        </div>
     </div>
-</div>
 
     <script>
         const contentData = {
             'history': {
-                title: "La Nostra Storia",
+                titolo: "La Nostra Storia",
                 badge: "CRONACHE DEL PARTITO",
-                body: `
-                    <p>Le radici di <strong>Pactum Patriae</strong> affondano nell'8 luglio 2025, quando i vertici di Prima l'Orizzonte e forze indipendenti dell'ex Progresso Riformista diedero vita a Novum Pactum, con l'obiettivo di restaurare l'integrità politica di un tempo.</p>
-                    <p>Dopo la vittoria alle presidenziali di agosto e il successo elettorale di settembre con ben 106 voti e 4 seggi in Congresso, il percorso subì una brusca interruzione a ottobre a causa di accuse infamanti verso la presidenza, portando allo scioglimento forzato.</p>
-                    <p>Il 24 gennaio 2026 segna la rinascita definitiva: nasce <strong>Pactum Patriae</strong> dalla ripartenza politica dell'ex <strong>Presidente Generale Zicli</strong> e il confluimento della Lega. La nostra missione è ribaltare una classe politica corrotta e clientelare, agendo nell'unico interesse della Nazione.</p>
-                `
-            },
-            'news-1': {
-                title: "La Fondazione",
-                badge: "25 GENNAIO 2026",
-                image: "img/fondazione.jpg",
-                body: `
-                    <p><strong>Pactum Patriae</strong> viene fondato il 25/01, in maniera ufficiale, si presenta come alternativa all'egemonia delle attuali forze demagogiche, essendosi rese contrarie al bene dei valori e delle tradizioni della nostra amata Patria.</p>
-                    <p>È per questo che <strong>Andrea Isidoro Zicli</strong> fa rincere il Patto della Patria, un accordo per riunire tutti coloro che credono nella forza dell'unione come strumento di opposizione, atto a far crescere il sentimento d'attrazione verso i valori che, sin dall'epoca dei nostri antenati, ci accumunano e pervadono.</p>
-                    <p>Cos'aspetti? Siamo noi che aspettiamo te! <br>Unisciti ora, fai riecheggiare il tuo credo. <strong>Per la Patria!</strong></p>
+                contenuto: `
+                    <p>Le radici di <strong>Pactum Patriae</strong> affondano nell'8 luglio 2025, quando i vertici di Prima l'Orizzonte e forze indipendenti diedero vita a un progetto per restaurare l'integrità politica di un tempo.</p>
+                    <p>Dopo grandi successi elettorali, il percorso subì una brusca interruzione a ottobre. Ma il vero valore non si spegne.</p>
+                    <p>Il 25 gennaio 2026 segna la rinascita definitiva: nasce <strong>Pactum Patriae</strong> dalla guida di <strong>Andrea Isidoro Zicli</strong>. La nostra missione è ribaltare una classe politica corrotta e clientelare, agendo nell'unico interesse della Nazione.</p>
                 `
             }
         };
 
         const modal = document.getElementById('dynamicModal');
 
-        function openModal(type) {
-            const data = contentData[type];
-            if (data) {
-                document.getElementById('modalName').innerText = data.title;
-                document.getElementById('modalBadge').innerText = data.badge;
-                document.getElementById('modalBody').innerHTML = data.body;
+        function openDynamicModal(data) {
+            document.getElementById('modalName').innerText = data.titolo;
+            document.getElementById('modalBadge').innerText = data.badge || "COMUNICATO";
+            document.getElementById('modalBody').innerHTML = data.contenuto;
 
-                const imgContainer = document.getElementById('modalImageContainer');
-                const imgTag = document.getElementById('modalImage');
-                if (data.image) {
-                    imgTag.src = data.image;
-                    imgContainer.style.display = 'block';
-                } else {
-                    imgContainer.style.display = 'none';
-                }
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
+            const imgContainer = document.getElementById('modalImageContainer');
+            const imgTag = document.getElementById('modalImage');
+
+            if (data.immagine_url || data.image) {
+                imgTag.src = data.immagine_url || data.image;
+                imgContainer.style.display = 'block';
+            } else {
+                imgContainer.style.display = 'none';
             }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
-
-        document.getElementById('openHistory').onclick = () => openModal('history');
-
-        function openNews(id) { openModal(id); }
+        
+        document.getElementById('openHistory').onclick = () => openDynamicModal(contentData.history);
 
         function closeModal() {
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
 
-        window.onclick = (event) => {
-            if (event.target === modal) closeModal();
-        };
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === "Escape") closeModal();
-        });
+        window.onclick = (event) => { if (event.target === modal) closeModal(); };
+        document.addEventListener('keydown', (e) => { if (e.key === "Escape") closeModal(); });
     </script>
+
+    <script src="logic.js"></script>
 </body>
 </html>

@@ -33,7 +33,9 @@ const ADMIN_AUTORIZZATO = 'Zicli';
         const mappePermessi = { 
             'staff.html': 'C',    
             'riunioni.html': 'R', 
-            'bilancio.html': 'E'  
+            'bilancio.html': 'E',
+            'notizie.html': 'N',
+            'credenziali.html': 'A'
         };
         
         const letteraNecessaria = mappePermessi[paginaCorrente];
@@ -152,6 +154,7 @@ async function fetchUtenti() {
                     ${creaBottone(u.id, 'C', p.includes('C'), 'Consiglieri', u.username)}
                     ${creaBottone(u.id, 'R', p.includes('R'), 'Riunioni', u.username)}
                     ${creaBottone(u.id, 'E', p.includes('E'), 'Economia', u.username)}
+                    ${creaBottone(u.id, 'N', p.includes('N'), 'Notizie', u.username)} 
                     ${creaBottone(u.id, 'A', p.includes('A'), 'Admin', u.username)}
                 </div>
             </td>
