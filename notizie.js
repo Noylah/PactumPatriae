@@ -113,15 +113,27 @@ async function eliminaNotizia(id, titolo) {
 function openDynamicModal(id) {
     const data = window.listaNotizie.find(item => item.id === id);
     if (!data) return;
+
     document.getElementById('modalName').innerText = data.titolo;
     document.getElementById('modalBadge').innerText = data.badge || "COMUNICATO";
     document.getElementById('modalBody').innerHTML = data.contenuto.replace(/\n/g, '<br>');
+    
+    const dateEl = document.getElementById('modalDate');
+    if (data.data_comunicato) {
+        dateEl.innerText = new Date(data.data_comunicato).toLocaleDateString('it-IT');
+    } else {
+        dateEl.innerText = "";
+    }
+
     const imgCont = document.getElementById('modalImageContainer');
     const img = document.getElementById('modalImage');
     if (data.immagine_url) {
         img.src = `https://images.weserv.nl/?url=${encodeURIComponent(data.immagine_url)}`;
         imgCont.style.display = 'block';
-    } else imgCont.style.display = 'none';
+    } else {
+        imgCont.style.display = 'none';
+    }
+
     document.getElementById('dynamicModal').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
