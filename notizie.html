@@ -103,13 +103,20 @@
     </div>
 
     <div id="dynamicModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" onclick="closeModal()">&times;</span>
-            <div id="modalImageContainer" style="display: none; margin-bottom: 25px;"><img id="modalImage" src=""></div>
-            <span class="modal-badge" id="modalBadge"></span>
-            <h2 id="modalName"></h2>
-            <div id="modalBody" class="lore-text-box"></div>
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        <div id="modalImageContainer" style="display: none; margin-bottom: 25px;">
+            <img id="modalImage" src="">
         </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="modal-badge" id="modalBadge"></span>
+            <span id="modalDate" style="color: rgba(255,255,255,0.5); font-size: 0.9rem; font-family: 'Public Sans', sans-serif;"></span>
+        </div>
+
+        <h2 id="modalName"></h2>
+        <div id="modalBody" class="lore-text-box"></div>
+    </div>
     </div>
     <script src="notizie.js"></script>
 </body>
