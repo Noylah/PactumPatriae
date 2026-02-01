@@ -91,15 +91,27 @@
         function openDynamicModal(data) {
         document.getElementById('modalName').innerText = data.titolo;
         document.getElementById('modalBadge').innerText = data.badge || "COMUNICATO";
-        document.getElementById('modalBody').innerHTML = data.contenuto;
+    
+        const contenutoFormattato = data.contenuto.replace(/\n/g, '<br>');
+        document.getElementById('modalBody').innerHTML = contenutoFormattato;
             
         const dateEl = document.getElementById('modalDate');
         if (data.data_comunicato) {
-            const d = new Date(data.data_comunicato);
-            dateEl.innerText = d.toLocaleDateString('it-IT');
-        } else {
-            dateEl.innerText = "";
+            dateEl.innerText = new Date(data.data_comunicato).toLocaleDateString('it-IT');
         }
+
+        const imgContainer = document.getElementById('modalImageContainer');
+        const imgTag = document.getElementById('modalImage');
+        if (data.immagine_url || data.image) {
+            imgTag.src = data.immagine_url || data.image;
+            imgContainer.style.display = 'block';
+        } else {
+            imgContainer.style.display = 'none';
+    }
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    }
 
         const imgContainer = document.getElementById('modalImageContainer');
         const imgTag = document.getElementById('modalImage');
