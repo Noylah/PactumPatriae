@@ -56,17 +56,21 @@
     </section>
 
     <div id="dynamicModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" onclick="closeModal()">&times;</span>
-            
-            <div id="modalImageContainer" style="display: none; margin-bottom: 25px;">
-                <img id="modalImage" src="https://images.weserv.nl/?url=${encodeURIComponent(n.immagine_url)}" alt="News Image">
-            </div>
-
-            <span class="modal-badge" id="modalBadge">BADGE</span>
-            <h2 id="modalName">Titolo</h2>
-            <div id="modalBody" class="lore-text-box"></div>
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        
+        <div id="modalImageContainer" style="display: none; margin-bottom: 25px;">
+            <img id="modalImage" src="" alt="News Image">
         </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="modal-badge" id="modalBadge">BADGE</span>
+            <span id="modalDate" style="color: rgba(255,255,255,0.5); font-size: 0.9rem; font-family: 'Public Sans', sans-serif;"></span>
+        </div>
+        
+        <h2 id="modalName">Titolo</h2>
+        <div id="modalBody" class="lore-text-box"></div>
+    </div>
     </div>
 
     <script>
@@ -85,22 +89,30 @@
         const modal = document.getElementById('dynamicModal');
 
         function openDynamicModal(data) {
-            document.getElementById('modalName').innerText = data.titolo;
-            document.getElementById('modalBadge').innerText = data.badge || "COMUNICATO";
-            document.getElementById('modalBody').innerHTML = data.contenuto;
+        document.getElementById('modalName').innerText = data.titolo;
+        document.getElementById('modalBadge').innerText = data.badge || "COMUNICATO";
+        document.getElementById('modalBody').innerHTML = data.contenuto;
+            
+        const dateEl = document.getElementById('modalDate');
+        if (data.data_comunicato) {
+            const d = new Date(data.data_comunicato);
+            dateEl.innerText = d.toLocaleDateString('it-IT');
+        } else {
+            dateEl.innerText = "";
+        }
 
-            const imgContainer = document.getElementById('modalImageContainer');
-            const imgTag = document.getElementById('modalImage');
+        const imgContainer = document.getElementById('modalImageContainer');
+        const imgTag = document.getElementById('modalImage');
 
-            if (data.immagine_url || data.image) {
-                imgTag.src = data.immagine_url || data.image;
-                imgContainer.style.display = 'block';
-            } else {
-                imgContainer.style.display = 'none';
-            }
+        if (data.immagine_url || data.image) {
+            imgTag.src = data.immagine_url || data.image;
+            imgContainer.style.display = 'block';
+        } else {
+            imgContainer.style.display = 'none';
+        }
 
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
         }
         
         document.getElementById('openHistory').onclick = () => openDynamicModal(contentData.history);
