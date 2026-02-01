@@ -90,6 +90,7 @@ async function caricaNotizieHome() {
     const { data: notizie, error } = await _supabase
         .from('notizie')
         .select('*')
+        .order('data_comunicato', { ascending: false })
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -100,30 +101,30 @@ async function caricaNotizieHome() {
     const grid = document.getElementById('news-grid');
     if (!grid) return;
 
-    grid.innerHTML = ''; 
+    if (notizie.length === 0) {
+        grid.innerHTML = '<p style="color: rgba(255,255,255,0.5); text-align: center; grid-column: 1/-1;">Nessun comunicato presente.</p>';
+        return;
+    }
 
-    notizie.forEach(n => {
-        const article = document.createElement('article');
-        article.className = 'news-card';
-        
-        article.onclick = () => openDynamicModal(n);
+    grid.innerHTML = notizie.map(n => {
+        const dataFmt = n.data_comunicato 
+            ? new Date(n.data_comunicato).toLocaleDateString('it-IT') 
+            : "";
 
-        const imageHTML = n.immagine_url 
-            ? `<img src="${n.immagine_url}" alt="${n.titolo}" class="news-img-top">`
-            : `<div class="news-placeholder"></div>`;
-
-        article.innerHTML = `
-            <div class="news-image-container">
-                ${imageHTML}
-            </div>
-            <div class="news-info">
-                <h3>${n.titolo}</h3>
-                <p>${n.sottotitolo || ''}</p>
+        return `
+            <div class="news-card" onclick='openDynamicModal(${JSON.stringify(n).replace(/'/g, "&apos;")})'>
+                <div class="card-content">
+                    <div class="card-top">
+                        <span class="card-badge">${n.badge || 'COMUNICATO'}</span>
+                        <span class="card-date">${dataFmt}</span>
+                    </div>
+                    <h3>${n.titolo}</h3>
+                    <p>${n.sottotitolo || ''}</p>
+                    <span class="read-more">Leggi tutto →</span>
+                </div>
             </div>
         `;
-        
-        grid.appendChild(article);
-    });
+    }).join('');
 }
 
 document.addEventListener('DOMContentLoaded', caricaNotizieHome);
