@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ʜᴏᴍᴇ • Pactum Patriae</title>
-<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,600;1,600&family=Public+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,600;1,600&family=Public+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="img/favicon.png" type="image/png">
     <meta name="referrer" content="no-referrer">
@@ -56,21 +56,21 @@
     </section>
 
     <div id="dynamicModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" onclick="closeModal()">&times;</span>
-        
-        <div id="modalImageContainer" style="display: none; margin-bottom: 25px;">
-            <img id="modalImage" src="" alt="News Image">
-        </div>
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            
+            <div id="modalImageContainer" style="display: none; margin-bottom: 25px;">
+                <img id="modalImage" src="" alt="News Image">
+            </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <span class="modal-badge" id="modalBadge">BADGE</span>
-            <span id="modalDate" style="color: rgba(255,255,255,0.5); font-size: 0.9rem; font-family: 'Public Sans', sans-serif;"></span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span class="modal-badge" id="modalBadge">BADGE</span>
+                <span id="modalDate" style="color: rgba(255,255,255,0.5); font-size: 0.9rem; font-family: 'Public Sans', sans-serif;"></span>
+            </div>
+            
+            <h2 id="modalName">Titolo</h2>
+            <div id="modalBody" class="lore-text-box"></div>
         </div>
-        
-        <h2 id="modalName">Titolo</h2>
-        <div id="modalBody" class="lore-text-box"></div>
-    </div>
     </div>
 
     <script>
@@ -79,9 +79,9 @@
                 titolo: "La Nostra Storia",
                 badge: "CRONACHE DEL PARTITO",
                 contenuto: `
-                    <p>Le radici di <strong>Pactum Patriae</strong> affondano nell'8 luglio 2025, quando i vertici di Prima l'Orizzonte e forze indipendenti diedero vita a un progetto per restaurare l'integrità politica di un tempo.</p>
-                    <p>Dopo grandi successi elettorali, il percorso subì una brusca interruzione a ottobre. Ma il vero valore non si spegne.</p>
-                    <p>Il 25 gennaio 2026 segna la rinascita definitiva: nasce <strong>Pactum Patriae</strong> dalla guida di <strong>Andrea Isidoro Zicli</strong>. La nostra missione è ribaltare una classe politica corrotta e clientelare, agendo nell'unico interesse della Nazione.</p>
+                    Le radici di <strong>Pactum Patriae</strong> affondano nell'8 luglio 2025, quando i vertici di Prima l'Orizzonte e forze indipendenti diedero vita a un progetto per restaurare l'integrità politica di un tempo.
+                    \n\nDopo grandi successi elettorali, il percorso subì una brusca interruzione a ottobre. Ma il vero valore non si spegne.
+                    \n\nIl 25 gennaio 2026 segna la rinascita definitiva: nasce <strong>Pactum Patriae</strong> dalla guida di <strong>Andrea Isidoro Zicli</strong>. La nostra missione è ribaltare una classe politica corrotta e clientelare, agendo nell'unico interesse della Nazione.
                 `
             }
         };
@@ -89,44 +89,34 @@
         const modal = document.getElementById('dynamicModal');
 
         function openDynamicModal(data) {
-        document.getElementById('modalName').innerText = data.titolo;
-        document.getElementById('modalBadge').innerText = data.badge || "COMUNICATO";
-    
-        const contenutoFormattato = data.contenuto.replace(/\n/g, '<br>');
-        document.getElementById('modalBody').innerHTML = contenutoFormattato;
-            
-        const dateEl = document.getElementById('modalDate');
-        if (data.data_comunicato) {
-            dateEl.innerText = new Date(data.data_comunicato).toLocaleDateString('it-IT');
-        }
-
-        const imgContainer = document.getElementById('modalImageContainer');
-        const imgTag = document.getElementById('modalImage');
-        if (data.immagine_url || data.image) {
-            imgTag.src = data.immagine_url || data.image;
-            imgContainer.style.display = 'block';
-        } else {
-            imgContainer.style.display = 'none';
-    }
-
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    }
-
-        const imgContainer = document.getElementById('modalImageContainer');
-        const imgTag = document.getElementById('modalImage');
-
-        if (data.immagine_url || data.image) {
-            imgTag.src = data.immagine_url || data.image;
-            imgContainer.style.display = 'block';
-        } else {
-            imgContainer.style.display = 'none';
-        }
-
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        }
+            document.getElementById('modalName').innerText = data.titolo;
+            document.getElementById('modalBadge').innerText = data.badge || "COMUNICATO";
         
+            const contenutoFormattato = data.contenuto.replace(/\n/g, '<br>');
+            document.getElementById('modalBody').innerHTML = contenutoFormattato;
+
+            const dateEl = document.getElementById('modalDate');
+            if (data.data_comunicato) {
+                dateEl.innerText = new Date(data.data_comunicato).toLocaleDateString('it-IT');
+            } else {
+                dateEl.innerText = "";
+            }
+            
+            const imgContainer = document.getElementById('modalImageContainer');
+            const imgTag = document.getElementById('modalImage');
+            
+            const imageUrl = data.immagine_url || data.image;
+            if (imageUrl) {
+                imgTag.src = imageUrl;
+                imgContainer.style.display = 'block';
+            } else {
+                imgContainer.style.display = 'none';
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
         document.getElementById('openHistory').onclick = () => openDynamicModal(contentData.history);
 
         function closeModal() {
