@@ -113,28 +113,31 @@ async function caricaNotizieHome() {
 
         let imageHTML = "";
         if (n.immagine_url) {
-            const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(n.immagine_url)}&w=600&h=400&fit=cover`;
-            imageHTML = `<img src="${proxyUrl}" alt="News Image" class="news-preview-img">`;
+            let finalUrl = n.immagine_url;
+            if (n.immagine_url.startsWith('http')) {
+                finalUrl = `https://images.weserv.nl/?url=${encodeURIComponent(n.immagine_url)}&w=600&fit=cover`;
+            }
+            imageHTML = `<img src="${finalUrl}" alt="News Image" class="news-preview-img" onerror="this.src='img/LogoPP.jpg'">`;
+        } else {
+            imageHTML = `<img src="img/LogoPP.jpg" alt="Logo" class="news-preview-img">`;
         }
 
         return `
             <article class="news-card" onclick='openDynamicModal(${JSON.stringify(n).replace(/'/g, "&apos;")})'>
                 <div class="news-image-container">
                     ${imageHTML}
-                    <div class="card-overlay-info">
-                        <span class="card-badge">${n.badge || 'COMUNICATO'}</span>
-                    </div>
                 </div>
                 <div class="news-info">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                         <h3 style="margin:0;">${n.titolo}</h3>
-                        <span class="card-date" style="font-size: 0.75rem; opacity: 0.6;">${dataFmt}</span>
+                        <span class="card-date" style="font-size: 0.75rem; opacity: 0.6; font-family: 'Public Sans', sans-serif;">${dataFmt}</span>
                     </div>
-                    <p>${n.sottotitolo || ''}</p>
+                    <p style="margin-bottom: 15px;">${n.sottotitolo || ''}</p>
                     <span class="read-more">Leggi tutto →</span>
                 </div>
             </article>
         `;
     }).join('');
 }
+
 document.addEventListener('DOMContentLoaded', caricaNotizieHome);
