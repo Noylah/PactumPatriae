@@ -122,6 +122,7 @@ function inizializzaDragAndDrop() {
                     .update({ ordine: item.ordine })
                     .eq('id', item.id);
             }
+            await inviaLog("Notizie: Nuovo ordine salvato", "L'ordine delle notizie è stato modificato tramite drag & drop.");
         }
     });
 }
@@ -172,7 +173,7 @@ async function salvaNotizia() {
     if (error) {
         alert("Errore: " + error.message);
     } else {
-        await inviaLog("Notizie: Nuovo comunicato", `Titolo: ${titolo}`);
+        await inviaLog("Notizie: Nuovo comunicato creato", `Titolo: ${titolo}\nBadge: ${badge}`);
         location.reload(); 
     }
 }
@@ -201,7 +202,7 @@ async function salvaModificaCompleta() {
     if (error) {
         alert("Errore: " + error.message);
     } else {
-        await inviaLog("Notizie: Comunicato modificato", `ID: ${currentEditId} | Titolo: ${updates.titolo}`);
+        await inviaLog("Notizie: Comunicato modificato", `ID: ${currentEditId}\nNuovo Titolo: ${updates.titolo}`);
         location.reload();
     }
 }
@@ -210,7 +211,7 @@ async function eliminaNotizia(id, titolo) {
     if (confirm(`Eliminare definitivamente la notizia "${titolo}"?`)) {
         const { error } = await _supabase.from('notizie').delete().eq('id', id);
         if (!error) {
-            await inviaLog("Notizie: Comunicato rimosso", `Titolo: ${titolo}`);
+            await inviaLog("Notizie: Comunicato rimosso", `Titolo: ${titolo}\nID: ${id}`);
             location.reload();
         }
     }
