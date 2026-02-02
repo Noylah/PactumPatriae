@@ -606,6 +606,15 @@ button.btn-hero {
     font-weight: 300;
     text-align: left;
 }
+
+#modalBody {
+    font-family: 'Public Sans', sans-serif;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.75); 
+    font-weight: 300;
+    text-align: left;
+}
+
 .contact-section {
     padding: 100px 20px;
     min-height: 100vh; 

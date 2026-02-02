@@ -425,3 +425,24 @@ textarea.minimal-input { height: 120px; resize: none; margin-bottom: 20px; }
     max-height: 90vh;
     overflow-y: auto; 
 }
+
+.dash-table th, .dash-table td {
+    white-space: nowrap;
+    padding: 12px 15px;
+}
+
+
+.sortable-ghost {
+    opacity: 0.3;
+    background: rgba(212, 175, 55, 0.1) !important;
+    outline: 1px dashed #d4af37;
+}
+
+.draggable-row {
+    transition: background 0.2s;
+}
+
+.draggable-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+

@@ -15,36 +15,29 @@ let currentEditId = null;
 
 (async function protezioneTotale() {
     const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
-
     if (sessionError || !session) {
         window.location.replace('login.html');
         return;
     }
-
     try {
         const emailUtente = session.user.email;
         const usernameDaCercare = emailUtente.split('@')[0];
-
         const { data: profilo, error: dbError } = await _supabase
             .from('staff_users')
             .select('permessi')
             .eq('username', usernameDaCercare) 
             .single();
-
         if (dbError || !profilo) {
             window.location.replace('login.html');
             return;
         }
-
         if (!profilo.permessi.includes('N') && usernameDaCercare !== 'Zicli') {
             alert("Accesso negato: non hai i permessi per gestire le notizie.");
             window.location.replace('staff.html');
             return;
         }
-
         document.body.style.visibility = "visible";
         document.body.style.opacity = "1";
-
     } catch (err) {
         window.location.replace('login.html');
     }
@@ -63,9 +56,7 @@ async function inviaLog(messaggio, descrizione = "") {
 function gestisciAccessoPagina() {
     const permessi = sessionStorage.getItem('userPermessi') || "";
     const sessionUser = (sessionStorage.getItem('loggedUser') || "").trim();
-
     if (sessionUser === 'Zicli') return;
-
     const mappe = {
         'dashboard.html': 'C',
         'riunioni.html': 'R',
@@ -73,7 +64,6 @@ function gestisciAccessoPagina() {
         'notizie.html': 'N',
         'credenziali.html': 'A'
     };
-
     document.querySelectorAll('.panel-link').forEach(link => {
         const href = link.getAttribute('href').split('/').pop();
         const letteraRichiesta = mappe[href];
@@ -94,46 +84,72 @@ async function caricaNotizie() {
     const { data: notizie, error } = await _supabase
         .from('notizie')
         .select('*')
-        .order('created_at', { ascending: false });
-
+        .order('ordine', { ascending: true }); 
     if (error) return;
-
-    window.listaNotizie = notizie; 
+    window.listaNotizie = notizie;
     const tbody = document.getElementById('news-data-body');
-    
-    tbody.innerHTML = notizie.map(n => `
-        <tr onclick="apriAnteprima('${n.id}')" style="cursor: pointer;">
-            <td style="text-align: left; font-weight: 600;">${n.titolo}</td>
-            <td style="text-align: center;"><span class="badge-mini">${n.badge || '-'}</span></td>
-            <td style="text-align: center; opacity: 0.7;">${new Date(n.created_at).toLocaleDateString()}</td>
-            <td style="text-align: right;">
-                <div style="display: flex; justify-content: flex-end; gap: 8px;" onclick="event.stopPropagation()">
-                    <button class="btn-action-dash edit" onclick="apriModifica('${n.id}')">MODIFICA</button>
-                    <button class="btn-action-dash delete" onclick="eliminaNotizia('${n.id}', '${n.titolo.replace(/'/g, "\\'")}')">RIMUOVI</button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = notizie.map(n => {
+        return `
+            <tr data-id="${n.id}" class="draggable-row" onclick="openDynamicModal('${n.id}')">
+                <td style="cursor: grab; width: 40px; text-align: center; color: #d4af37; font-size: 1.2rem;">☰</td>
+                <td style="text-align: left; font-weight: 600;">${n.titolo}</td>
+                <td style="text-align: center;"><span class="badge-mini">${n.badge || '-'}</span></td>
+                <td style="text-align: right;">
+                    <button class="btn-action-dash edit" onclick="event.stopPropagation(); apriModifica('${n.id}')">MODIFICA</button>
+                    <button class="btn-action-dash delete" onclick="event.stopPropagation(); eliminaNotizia('${n.id}', '${n.titolo.replace(/'/g, "\\'")}')">X</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+    inizializzaDragAndDrop();
+}
+
+function inizializzaDragAndDrop() {
+    const el = document.getElementById('news-data-body');
+    Sortable.create(el, {
+        animation: 150,
+        handle: '.draggable-row', 
+        ghostClass: 'sortable-ghost',
+        onEnd: async function () {
+            const rows = Array.from(el.querySelectorAll('tr'));
+            const updates = rows.map((row, index) => ({
+                id: row.getAttribute('data-id'),
+                ordine: index 
+            }));
+            for (const item of updates) {
+                await _supabase
+                    .from('notizie')
+                    .update({ ordine: item.ordine })
+                    .eq('id', item.id);
+            }
+        }
+    });
 }
 
 function openDynamicModal(id) {
     const data = window.listaNotizie.find(item => item.id === id);
     if (!data) return;
-
     document.getElementById('modalName').innerText = data.titolo;
     document.getElementById('modalBadge').innerText = data.badge || "COMUNICATO";
-    document.getElementById('modalBody').innerHTML = data.contenuto.replace(/\n/g, '<br>');
-
+    const contenutoProcessato = data.contenuto
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    document.getElementById('modalBody').innerHTML = contenutoProcessato;
     const imgContainer = document.getElementById('modalImageContainer');
     const imgTag = document.getElementById('modalImage');
-
-    if (data.immagine_url) {
-        imgTag.src = `https://images.weserv.nl/?url=${encodeURIComponent(data.immagine_url)}`;
+    let url = data.immagine_url || data.image;
+    if (url) {
+        if (url.includes('imgur.com')) {
+            url = url.replace('imgur.com', 'i.imgur.com');
+            if (!url.match(/\.(jpg|jpeg|png|gif)$/)) {
+                url += '.jpg';
+            }
+        }
+        imgTag.src = url;
         imgContainer.style.display = 'block';
     } else {
         imgContainer.style.display = 'none';
     }
-
     const modal = document.getElementById('dynamicModal');
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -151,11 +167,8 @@ async function salvaNotizia() {
     const sottotitolo = document.getElementById('newsSubtitle').value.trim();
     const contenuto = document.getElementById('newsContent').value.trim();
     const immagine_url = document.getElementById('newsImageUrl').value.trim();
-
     if (!titolo || !contenuto) return alert("Inserisci Titolo e Contenuto.");
-
     const { error } = await _supabase.from('notizie').insert([{ titolo, badge, sottotitolo, contenuto, immagine_url }]);
-
     if (error) {
         alert("Errore: " + error.message);
     } else {
@@ -184,9 +197,7 @@ async function salvaModificaCompleta() {
         contenuto: document.getElementById('edit-contenuto').value,
         immagine_url: document.getElementById('edit-immagine').value
     };
-
     const { error } = await _supabase.from('notizie').update(updates).eq('id', currentEditId);
-
     if (error) {
         alert("Errore: " + error.message);
     } else {
@@ -213,6 +224,29 @@ function toggleAddForm() {
 function chiudiModal() {
     document.getElementById('editModal').style.display = 'none';
 }
+
+function applicaGrassetto(textarea) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const testo = textarea.value;
+    const selezionato = testo.substring(start, end);
+    if (selezionato.length > 0) {
+        const nuovoTesto = testo.substring(0, start) + "**" + selezionato + "**" + testo.substring(end);
+        textarea.value = nuovoTesto;
+        textarea.focus();
+        textarea.setSelectionRange(start + 2, end + 2);
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+        const attivo = document.activeElement;
+        if (attivo.id === 'newsContent' || attivo.id === 'edit-contenuto') {
+            e.preventDefault(); 
+            applicaGrassetto(attivo);
+        }
+    }
+});
 
 function logout() {
     inviaLog("Sistema: Logout effettuato");

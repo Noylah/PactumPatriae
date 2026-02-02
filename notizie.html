@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="style-staff.css">
     <link rel="icon" href="img/favicon.png" type="image/png">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="staff-body">
@@ -90,15 +91,13 @@
                 <div class="table-scroll">
                     <table class="dash-table">
                         <thead>
-                            <tr id="table-head">
-                                <th style="text-align: left;">Titolo</th>
+                            <tr>
+                                <th style="width: 40px;"></th> <th style="text-align: left;">Titolo</th>
                                 <th style="text-align: center;">Etichetta</th>
-                                <th style="text-align: center;">Data</th>
                                 <th style="text-align: right;">Azioni</th>
                             </tr>
                         </thead>
-                        <tbody id="news-data-body">
-                            </tbody>
+                        <tbody id="news-data-body"></tbody>
                     </table>
                 </div>
             </section>

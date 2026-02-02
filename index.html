@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
     <title>ʜᴏᴍᴇ • Pactum Patriae</title>
-<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,600;1,600&family=Public+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,600;1,600&family=Public+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="img/favicon.png" type="image/png">
-    <meta name="referrer" content="no-referrer">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -25,6 +26,7 @@
                 <li><a href="dirigenza.html" class="menu-link">Dirigenza</a></li>
                 <li><a href="sede.html" class="menu-link">Sede</a></li>
                 <li><a href="contatti.html" class="menu-link">Contatti</a></li>
+                <li><a href="https://docs.google.com/document/d/1ZfzqJzl2AwkSH_iclinc4FSuGN071srbUYL6rFPKOmc/edit?tab=t.0" target="_blank" class="menu-link">Statuto</a></li>
             </ul>
         </div>
         <div class="nav-right">
@@ -85,23 +87,35 @@
         const modal = document.getElementById('dynamicModal');
 
         function openDynamicModal(data) {
-            document.getElementById('modalName').innerText = data.titolo;
-            document.getElementById('modalBadge').innerText = data.badge || "COMUNICATO";
-            document.getElementById('modalBody').innerHTML = data.contenuto;
+    document.getElementById('modalName').innerText = data.titolo;
+    document.getElementById('modalBadge').innerText = data.badge || "COMUNICATO";
 
-            const imgContainer = document.getElementById('modalImageContainer');
-            const imgTag = document.getElementById('modalImage');
+    const contenutoProcessato = data.contenuto
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    document.getElementById('modalBody').innerHTML = contenutoProcessato;
 
-            if (data.immagine_url || data.image) {
-                imgTag.src = data.immagine_url || data.image;
-                imgContainer.style.display = 'block';
-            } else {
-                imgContainer.style.display = 'none';
+    const imgContainer = document.getElementById('modalImageContainer');
+    const imgTag = document.getElementById('modalImage');
+    let url = data.immagine_url || data.image;
+
+    if (url) {
+        if (url.includes('imgur.com')) {
+            url = url.replace('imgur.com', 'i.imgur.com');
+            if (!url.match(/\.(jpg|jpeg|png|gif)$/)) {
+                url += '.jpg';
             }
-
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
         }
+        imgTag.src = url;
+        imgContainer.style.display = 'block';
+    } else {
+        imgContainer.style.display = 'none';
+    }
+
+    const modal = document.getElementById('dynamicModal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
         
         document.getElementById('openHistory').onclick = () => openDynamicModal(contentData.history);
 

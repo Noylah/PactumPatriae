@@ -90,7 +90,7 @@ async function caricaNotizieHome() {
     const { data: notizie, error } = await _supabase
         .from('notizie')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('ordine', { ascending: true });
 
     if (error) {
         console.error("Errore caricamento notizie:", error);
