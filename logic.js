@@ -3,14 +3,16 @@ const SUPABASE_URL = 'https://ljqyjqgjeloceimeiayr.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqcXlqcWdqZWxvY2VpbWVpYXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMjAxNTMsImV4cCI6MjA4Mzc5NjE1M30.dNvhvad9_mR64RqeNZyu4X_GdxSOFz23TuiLt33GXxk';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-async function inviaLog(messaggio, descrizione = "") {
+async function inviaLog(azione, dettagli = "") {
     try {
         const { data: { session } } = await _supabase.auth.getSession();
-        await _supabase.functions.invoke('send-telegram-log', {
-            body: { messaggio, descrizione }, 
-            headers: {
-                Authorization: `Bearer ${session?.access_token}`
-            }
+        const username = session?.user?.email ? session.user.email.split('@')[0].toUpperCase() : "Sistema/Sconosciuto";
+
+        const messaggioFormattato = `🦅 *Pactum Patriae*\nɴᴜᴏᴠᴏ ʟᴏɢ ꜱɪᴛᴏ\n\n👤 ᴏᴘᴇʀᴀᴛᴏʀᴇ: ${username}\n📝 ᴀᴢɪᴏɴᴇ: ${azione}\n\n📖 ᴅᴇᴛᴛᴀɢʟɪ: ${dettagli}`;
+
+        await _supabase.functions.invoke('send-telegram-messaggio', {
+            body: { messaggio: messaggioFormattato },
+            headers: { Authorization: `Bearer ${session?.access_token}` }
         });
     } catch (err) {
         console.error("Errore log:", err.message);
@@ -28,14 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
             let telegram = document.getElementById('telegram').value;
             const submitBtn = this.querySelector('button');
 
-            const escapeMarkdown = (text) => text.replace(/[_*`[\]()]/g, '\\$&');
-
             if (telegram && !telegram.startsWith('@')) {
                 telegram = '@' + telegram;
             }
-
-            const cleanNickname = escapeMarkdown(nickname);
-            const cleanTelegram = escapeMarkdown(telegram);
 
             submitBtn.disabled = true;
             submitBtn.innerText = "Recupero IP...";
@@ -45,30 +42,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ipData = await ipRes.json();
                 const userIP = ipData.ip;
 
-                const messaggioInviato = `🦅 *Pactum Patriae*\nʀɪᴄʜɪᴇsᴛᴀ ᴅɪ ᴀꜰꜰɪʟɪᴀᴢɪᴏɴᴇ ᴛʀᴀᴍɪᴛᴇ ᴡᴇʙ\n\n• 👤 *ᴜsᴇʀɴᴀᴍᴇ*: ${cleanNickname}\n• 💬 *ᴛᴇʟᴇɢʀᴀᴍ*: ${cleanTelegram}`;
-
                 submitBtn.innerText = "Invio in corso...";
 
-                const { data, error: invokeError } = await _supabase.functions.invoke('send-telegram-broadcast', {
-                    body: {
-                        chat_id: TARGET_CHAT_ID,
-                        messaggio: messaggioInviato,
-                        topic_id: 113,
-                        parse_mode: "Markdown"
-                    }
-                });
-
-                if (invokeError || (data && !data.ok)) {
-                    throw new Error(invokeError?.message || data?.description || "Errore invio");
-                }
-
-                await _supabase.functions.invoke('send-telegram-log', {
+                const { data, error } = await _supabase.functions.invoke('send-telegram-affiliazione', {
                     body: { 
-                        type: "RICHIESTA_AFFILIAZIONE",
-                        userIP: userIP, 
-                        descrizione: `Nickname: ${nickname} | Telegram: ${telegram}`
+                        nickname: nickname,
+                        telegram: telegram,
+                        userIP: userIP
                     }
                 });
+
+                if (error) throw error;
 
                 const formBox = document.querySelector('.affiliati-form-box');
                 formBox.innerHTML = `

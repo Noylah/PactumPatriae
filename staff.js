@@ -60,15 +60,16 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 })();
 
-async function inviaLog(messaggio, descrizione = "") {
+async function inviaLog(azione, dettagli = "") {
     try {
         const { data: { session } } = await _supabase.auth.getSession();
-        
-        await _supabase.functions.invoke('send-telegram-log', {
-            body: { messaggio, descrizione }, 
-            headers: {
-                Authorization: `Bearer ${session?.access_token}`
-            }
+        const username = session?.user?.email ? session.user.email.split('@')[0].toUpperCase() : "Sistema/Sconosciuto";
+
+        const messaggioFormattato = `🦅 *Pactum Patriae*\nɴᴜᴏᴠᴏ ʟᴏɢ ꜱɪᴛᴏ\n\n👤 ᴏᴘᴇʀᴀᴛᴏʀᴇ: ${username}\n📝 ᴀᴢɪᴏɴᴇ: ${azione}\n\n📖 ᴅᴇᴛᴛᴀɢʟɪ: ${dettagli}`;
+
+        await _supabase.functions.invoke('send-telegram-messaggio', {
+            body: { messaggio: messaggioFormattato },
+            headers: { Authorization: `Bearer ${session?.access_token}` }
         });
     } catch (err) {
         console.error("Errore log:", err.message);
