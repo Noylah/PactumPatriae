@@ -6,7 +6,6 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 async function inviaLog(messaggio, descrizione = "") {
     try {
         const { data: { session } } = await _supabase.auth.getSession();
-        
         await _supabase.functions.invoke('send-telegram-log', {
             body: { messaggio, descrizione }, 
             headers: {
@@ -46,24 +45,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ipData = await ipRes.json();
                 const userIP = ipData.ip;
 
-                const messaggio = `🦅 *Pactum Patriae*\nʀɪᴄʜɪᴇꜱᴛᴀ ᴅɪ ᴀꜰꜰɪʟɪᴀᴢɪᴏɴᴇ ᴛʀᴀᴍɪᴛᴇ ᴡᴇʙ\n\n• 👤 *ᴜꜱᴇʀɴᴀᴍᴇ*: ${cleanNickname}\n• 💬 *ᴛᴇʟᴇɢʀᴀᴍ*: ${cleanTelegram}`;
+                const messaggioInviato = `🦅 *Pactum Patriae*\nʀɪᴄʜɪᴇsᴛᴀ ᴅɪ ᴀꜰꜰɪʟɪᴀᴢɪᴏɴᴇ ᴛʀᴀᴍɪᴛᴇ ᴡᴇʙ\n\n• 👤 *ᴜsᴇʀɴᴀᴍᴇ*: ${cleanNickname}\n• 💬 *ᴛᴇʟᴇɢʀᴀᴍ*: ${cleanTelegram}`;
 
                 submitBtn.innerText = "Invio in corso...";
 
-                const { data, error } = await _supabase.functions.invoke('send-telegram-broadcast', {
+                const { data, error: invokeError } = await _supabase.functions.invoke('send-telegram-broadcast', {
                     body: {
                         chat_id: TARGET_CHAT_ID,
-                        messaggio: messaggio,
+                        messaggio: messaggioInviato,
                         topic_id: 113,
                         parse_mode: "Markdown"
                     }
                 });
 
-                if (error || (data && !data.ok)) {
-                    throw new Error(error?.message || data?.description || "Errore invio");
+                if (invokeError || (data && !data.ok)) {
+                    throw new Error(invokeError?.message || data?.description || "Errore invio");
                 }
 
-                inviaLog("Affiliazioni: Nuova richiesta", `User: ${nickname} | IP: ${userIP}`);
+                await _supabase.functions.invoke('send-telegram-log', {
+                    body: { 
+                        type: "RICHIESTA_AFFILIAZIONE",
+                        userIP: userIP, 
+                        descrizione: `Nickname: ${nickname} | Telegram: ${telegram}`
+                    }
+                });
 
                 const formBox = document.querySelector('.affiliati-form-box');
                 formBox.innerHTML = `
@@ -77,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error(error);
-                inviaLog("Affiliazioni: Fallimento", `User: ${nickname} | Errore: ${error.message}`);
                 alert("Errore durante l'operazione.");
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Invia Richiesta";
