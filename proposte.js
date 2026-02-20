@@ -5,6 +5,81 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let mioUsername = null;
 let idInModifica = null;
 
+(async function protezioneTotale() {
+    const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
+    if (sessionError || !session) {
+        window.location.replace('login.html');
+        return;
+    }
+    try {
+        const emailUtente = session.user.email;
+        const usernameDaCercare = emailUtente.split('@')[0];
+        const { data: profilo, error: dbError } = await _supabase
+            .from('staff_users')
+            .select('permessi')
+            .eq('username', usernameDaCercare) 
+            .single();
+
+        if (dbError || !profilo) {
+            window.location.replace('login.html');
+            return;
+        }
+
+        sessionStorage.setItem('userPermessi', profilo.permessi);
+        sessionStorage.setItem('loggedUser', usernameDaCercare);
+
+        const paginaCorrente = window.location.pathname.split('/').pop();
+        const mappePermessi = { 
+            'proposte.html': 'P',
+            'staff.html': 'C',    
+            'riunioni.html': 'R', 
+            'bilancio.html': 'E',
+            'notizie.html': 'N',
+            'credenziali.html': 'A',
+            'gestioneproposte.html': 'G'
+        };
+
+        const letteraNecessaria = mappePermessi[paginaCorrente];
+        if (letteraNecessaria && !profilo.permessi.includes(letteraNecessaria)) {
+            if (usernameDaCercare.toLowerCase() !== 'zicli') {
+                window.location.replace('login.html');
+                return;
+            }
+        }
+
+        nascondiVociSidebar(profilo.permessi);
+
+        document.body.style.visibility = "visible";
+        document.body.style.opacity = "1";
+    } catch (err) {
+        window.location.replace('login.html');
+    }
+})();
+
+function nascondiVociSidebar(permessi) {
+    if (sessionStorage.getItem('loggedUser')?.toLowerCase() === 'zicli') return;
+
+    const mapping = {
+        'nav-proposte': 'P',
+        'nav-staff': 'C',
+        'nav-riunioni': 'R',
+        'nav-bilancio': 'E',
+        'nav-notizie': 'N',
+        'nav-credenziali': 'A',
+        'nav-gestione': 'G'
+    };
+
+    Object.keys(mapping).forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+            const letteraNecessaria = mapping[id];
+            if (!permessi.includes(letteraNecessaria)) {
+                elemento.style.display = 'none';
+            }
+        }
+    });
+}
+
 (async function initPagina() {
     const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
     if (sessionError || !session) { window.location.replace('login.html'); return; }
