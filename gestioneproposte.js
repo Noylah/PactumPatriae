@@ -85,6 +85,7 @@ async function caricaTutteLeProposte() {
                         <button onclick="apriValutazione(${p.id}, 'Approvata', '${p.titolo.replace(/'/g, "\\'")}', '${p.feedback_direzione || ""}')" class="btn-approve" style="flex:1; padding:8px; border-radius:4px; font-weight:700; font-size:0.65rem; cursor:pointer; border:1px solid rgba(46, 204, 113, 0.4); background:rgba(46, 204, 113, 0.1); color:#2ecc71;">APPROVA</button>
                         <button onclick="apriValutazione(${p.id}, 'Rifiutata', '${p.titolo.replace(/'/g, "\\'")}', '${p.feedback_direzione || ""}')" class="btn-reject" style="flex:1; padding:8px; border-radius:4px; font-weight:700; font-size:0.65rem; cursor:pointer; border:1px solid rgba(231, 76, 60, 0.4); background:rgba(231, 76, 60, 0.1); color:#e74c3c;">RIFIUTA</button>
                     </div>
+                    <button onclick="eliminaProposta(${p.id}, '${p.titolo.replace(/'/g, "\\'")}')" style="width:100%; padding:6px; margin-top:4px; border-radius:4px; font-size:0.6rem; font-weight:bold; cursor:pointer; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#666;">ELIMINA DEFINITIVAMENTE</button>
                 </div>
             `;
             pendingContainer.appendChild(card);
@@ -98,15 +99,32 @@ async function caricaTutteLeProposte() {
                     <span class="status-badge" style="background:${color}15; color:${color}; border:1px solid ${color}33;">${p.stato}</span>
                 </td>
                 <td style="text-align:right;">
-                    <div style="display:flex; justify-content:flex-end; gap:10px; align-items:center;">
+                    <div style="display:flex; justify-content:flex-end; gap:8px; align-items:center;">
                         <span style="font-size:0.7rem; color:#555;">${dataFormattata}</span>
                         <button onclick="apriValutazione(${p.id}, '${p.stato}', '${p.titolo.replace(/'/g, "\\'")}', '${p.feedback_direzione || ""}')" style="padding:6px 12px; border-radius:4px; font-weight:700; font-size:0.6rem; cursor:pointer; border:1px solid rgba(212, 175, 55, 0.4); background:rgba(212, 175, 55, 0.1); color:#d4af37;">MODIFICA</button>
+                        <button onclick="eliminaProposta(${p.id}, '${p.titolo.replace(/'/g, "\\'")}')" style="padding:6px; border-radius:4px; cursor:pointer; border:1px solid rgba(231, 76, 60, 0.3); background:transparent; color:#e74c3c;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                     </div>
                 </td>
             `;
             storicoBody.appendChild(tr);
         }
     });
+}
+
+async function eliminaProposta(id, titolo) {
+    if (!confirm(`Sei sicuro di voler eliminare permanentemente la proposta: "${titolo}"?\nQuesta azione non può essere annullata.`)) return;
+
+    const { error } = await _supabase
+        .from('proposte_consiglieri')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        alert("Errore durante l'eliminazione: " + error.message);
+    } else {
+        await inviaLog("Eliminazione Proposta", `Atto: ${titolo} (ID: ${id})`);
+        caricaTutteLeProposte();
+    }
 }
 
 function apriValutazione(id, decisione, titolo, feedbackPrecedente) {
