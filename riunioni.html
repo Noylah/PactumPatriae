@@ -27,6 +27,9 @@
             </div>
             
             <nav class="panel-menu">
+                <a href="proposte.html" class="panel-link">
+                    <span class="dot"></span> Proposte Personali
+                </a>
                 <a href="staff.html" class="panel-link">
                     <span class="dot"></span> Registro Consiglieri
                 </a>
@@ -38,6 +41,9 @@
                 </a>
                 <a href="notizie.html" class="panel-link">
                     <span class="dot"></span> Gestione Notizie
+                </a>
+                <a href="gestioneproposte.html" class="panel-link">
+                    <span class="dot"></span> Gestione Proposte
                 </a>
                 <a href="credenziali.html" class="panel-link">
                     <span class="dot"></span> Gestione Credenziali
@@ -61,33 +67,32 @@
             </header>
 
             <div id="riunioneFormContainer" style="display: none; margin-bottom: 25px; padding: 25px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); backdrop-filter: blur(10px);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="color: #d4af37; margin: 0; font-family: 'Crimson Pro', serif; font-size: 1.2rem;">✧ Registra Nuovo Verbale</h3>
-                    <button onclick="toggleRiunioneForm()" style="background:none; border:none; color:rgba(255,255,255,0.5); cursor:pointer; font-size: 1.2rem;">✕</button>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <input type="date" id="dataRiunione" style="padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: white; border-radius: 6px; outline: none;">
-                    <input type="text" id="presidiataDa" placeholder="Presidiata da..." style="padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: white; border-radius: 6px; outline: none;">
-                </div>
-                
-                <textarea id="odgRiunione" placeholder="Ordine del Giorno..." style="width: 100%; height: 100px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: white; border-radius: 6px; outline: none; padding: 12px; margin-bottom: 20px; resize: none;"></textarea>
-                
-                <h4 style="color: #d4af37; margin-bottom: 12px; font-family: 'Public Sans', sans-serif; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Appello Consiglieri</h4>
-                <div id="listaAppello" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px;">
-                    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="color: #d4af37; margin: 0; font-family: 'Crimson Pro', serif; font-size: 1.2rem;">✧ Registra Nuovo Verbale</h3>
+        <button onclick="toggleRiunioneForm()" style="background:none; border:none; color:rgba(255,255,255,0.5); cursor:pointer; font-size: 1.2rem;">✕</button>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+    <span class="tiny-label" style="display:block; margin-bottom:5px;">Suggerimenti: Proposte in Attesa</span>
+    <div id="suggerimentiProposte" style="display:flex; flex-wrap:wrap; gap:8px; background:rgba(0,0,0,0.2); padding:10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);"></div>
+</div>
 
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button class="btn-gold-action" onclick="salvaRiunione()" style="flex: 1; padding: 15px;">
-                        SALVA VERBALE
-                    </button>
-                    
-                    <button class="btn-gold-action" onclick="salvaComeOdG()" 
-                            style="flex: 1; padding: 15px; background: #0088cc; border-color: #0088cc; box-shadow: 0 4px 15px rgba(0, 136, 204, 0.2);">
-                        SALVA COME ODG
-                    </button>
-                </div>
-            </div>
+<div class="presence-box" style="margin-bottom: 20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="tiny-label">Punti Ordine del Giorno</span>
+        <button type="button" class="btn-action-dash save" onclick="aggiungiPuntoNuovo()" style="width:auto; padding:5px 10px;">+ AGGIUNGI PUNTO</button>
+    </div>
+    <div id="nuovoOdgContainer"></div>
+</div>
+    
+    <h4 style="color: #d4af37; margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">Appello Consiglieri</h4>
+    <div id="listaAppello" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px;"></div>
+
+    <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <button class="btn-gold-action" onclick="salvaRiunione()" style="flex: 1; padding: 15px;">SALVA VERBALE</button>
+        <button class="btn-gold-action" onclick="salvaComeOdG()" style="flex: 1; padding: 15px; background: #0088cc; border-color: #0088cc;">SALVA COME ODG</button>
+    </div>
+</div>
 
             <section class="glass-table-card">
                 <div class="table-scroll">

@@ -30,11 +30,12 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const paginaCorrente = window.location.pathname.split('/').pop();
         const mappePermessi = { 
+            'proposte.html': 'P',
             'staff.html': 'C',    
             'riunioni.html': 'R', 
             'bilancio.html': 'E',
             'notizie.html': 'N',
-            'credenziali.html': 'A'
+            'credenziali.html': 'A',
         };
         
         const letteraNecessaria = mappePermessi[paginaCorrente];

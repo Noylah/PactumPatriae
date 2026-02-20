@@ -306,6 +306,21 @@ button.btn-hero {
     box-shadow: 0 20px 45px rgba(0,0,0,0.4);
 }
 
+.news-date { 
+    display: block;
+    margin-top: 15px;
+    font-size: 0.75rem;
+    color: rgba(212, 175, 55, 0.7); 
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    font-family: 'Public Sans', sans-serif;
+}
+
+.news-card:hover .news-date {
+    color: rgba(212, 175, 55, 1); 
+}
+
 .news-placeholder {
     width: 100%;
     height: 200px; 

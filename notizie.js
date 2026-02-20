@@ -63,16 +63,17 @@ function gestisciAccessoPagina() {
     const permessi = sessionStorage.getItem('userPermessi') || "";
     const sessionUser = (sessionStorage.getItem('loggedUser') || "").trim();
     if (sessionUser === 'Zicli') return;
-    const mappe = {
-        'dashboard.html': 'C',
-        'riunioni.html': 'R',
-        'bilancio.html': 'E',
-        'notizie.html': 'N',
-        'credenziali.html': 'A'
-    };
+    const mappePermessi = { 
+            'proposte.html': 'P',
+            'staff.html': 'C',    
+            'riunioni.html': 'R', 
+            'bilancio.html': 'E',
+            'notizie.html': 'N',
+            'credenziali.html': 'A',
+        };
     document.querySelectorAll('.panel-link').forEach(link => {
         const href = link.getAttribute('href').split('/').pop();
-        const letteraRichiesta = mappe[href];
+        const letteraRichiesta = mappePermessi[href];
         if (letteraRichiesta && !permessi.includes(letteraRichiesta)) {
             link.style.display = 'none';
         } else {

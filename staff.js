@@ -29,11 +29,12 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         }
         const paginaCorrente = window.location.pathname.split('/').pop();
         const mappePermessi = { 
+            'proposte.html': 'P',
             'staff.html': 'C',    
             'riunioni.html': 'R', 
             'bilancio.html': 'E',
             'notizie.html': 'N',
-            'credenziali.html': 'A'
+            'credenziali.html': 'A',
         };
         const letteraNecessaria = mappePermessi[paginaCorrente];
         if (letteraNecessaria && !profilo.permessi.includes(letteraNecessaria)) {
@@ -138,16 +139,16 @@ async function salvaModifica(id) {
     inviaLog("Modifica Nome Consigliere", `${vecchioNome} -> ${nuovoNome}`);
 }
 
-let consigliereSelezionatoId = null;
+let nomeConsigliereSelezionato = null;
 
 async function apriStatistiche(consigliere) {
-    consigliereSelezionatoId = consigliere.id; 
+    nomeConsigliereSelezionato = consigliere.nome; 
     const modal = document.getElementById('modalStatistiche');
     document.getElementById('statNomeConsigliere').innerText = consigliere.nome;
     document.getElementById('statDataInizio').innerText = consigliere.data_creazione ? new Date(consigliere.data_creazione).toLocaleDateString('it-IT') : "Inizio Tempi";
     modal.style.display = "flex";
     await calcolaPercentualePresenza(consigliere.nome, consigliere.data_creazione);
-    await caricaProposte(consigliereSelezionatoId);
+    await caricaProposte(consigliere.nome);
     const permessi = sessionStorage.getItem('userPermessi') || "";
     const areaAdmin = document.getElementById('areaAdminProposte');
     if (areaAdmin) areaAdmin.style.display = (permessi.includes('A') || permessi.includes('C')) ? 'block' : 'none';
@@ -175,9 +176,9 @@ async function calcolaPercentualePresenza(nome, dataCreazione) {
     document.getElementById('statPresenzaPerc').innerText = totali > 0 ? `${Math.round((presenze / totali) * 100)}%` : "0%";
 }
 
-async function caricaProposte(id) {
+async function caricaProposte(nome) {
     const lista = document.getElementById('listaProposte');
-    const { data } = await _supabase.from('proposte_consiglieri').select('*').eq('consigliere_id', id).order('data_proposta', { ascending: false });
+    const { data } = await _supabase.from('proposte_consiglieri').select('*').ilike('username', `%${nome.toLowerCase().replace(' ', '.')}%`).order('data_proposta', { ascending: false });
     lista.innerHTML = '';
     const perm = sessionStorage.getItem('userPermessi') || "";
     const haP = perm.includes('A') || perm.includes('C');
@@ -224,13 +225,13 @@ async function caricaProposte(id) {
 
 async function aggiornaStatoProposta(id, stato) {
     await _supabase.from('proposte_consiglieri').update({ stato }).eq('id', id);
-    caricaProposte(consigliereSelezionatoId);
+    caricaProposte(nomeConsigliereSelezionato);
 }
 
 async function eliminaProposta(id) {
     if (confirm("Eliminare la proposta?")) {
         await _supabase.from('proposte_consiglieri').delete().eq('id', id);
-        caricaProposte(consigliereSelezionatoId);
+        caricaProposte(nomeConsigliereSelezionato);
     }
 }
 
@@ -268,7 +269,7 @@ async function salvaModificaProposta(id) {
     document.getElementById('nuovaPropostaTitolo').value = '';
     document.getElementById('nuovaPropostaLink').value = '';
     document.getElementById('nuovaPropostaData').value = '';
-    caricaProposte(consigliereSelezionatoId);
+    caricaProposte(nomeConsigliereSelezionato);
 }
 
 async function aggiungiProposta() {
@@ -277,16 +278,17 @@ async function aggiungiProposta() {
     const s = document.getElementById('nuovaPropostaStato').value;
     const d = document.getElementById('nuovaPropostaData').value;
     
-    if (!consigliereSelezionatoId || !t || !l) return;
+    if (!nomeConsigliereSelezionato || !t || !l) return;
 
     if (!/^https?:\/\//i.test(l)) {
         l = 'https://' + l;
     }
 
     const dataInserimento = d || new Date().toISOString().split('T')[0];
+    const usernameGenerato = nomeConsigliereSelezionato.toLowerCase().replace(' ', '.');
 
     const { error } = await _supabase.from('proposte_consiglieri').insert([{ 
-        consigliere_id: consigliereSelezionatoId, 
+        username: usernameGenerato, 
         titolo: t, 
         link_documento: l, 
         stato: s,
@@ -297,7 +299,7 @@ async function aggiungiProposta() {
         document.getElementById('nuovaPropostaTitolo').value = '';
         document.getElementById('nuovaPropostaLink').value = '';
         document.getElementById('nuovaPropostaData').value = '';
-        caricaProposte(consigliereSelezionatoId);
+        caricaProposte(nomeConsigliereSelezionato);
         inviaLog("Proposta", `Aggiunta: ${t}`);
     }
 }

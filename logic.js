@@ -100,6 +100,10 @@ async function caricaNotizieHome() {
             ? `<img src="${n.immagine_url}" alt="${n.titolo}" class="news-img-top">`
             : `<div class="news-placeholder"></div>`;
 
+        const dataComunicato = n.data_comunicato
+            ? new Date(n.data_comunicato).toLocaleDateString('it-IT') 
+            : "";
+
         article.innerHTML = `
             <div class="news-image-container">
                 ${imageHTML}
@@ -107,6 +111,9 @@ async function caricaNotizieHome() {
             <div class="news-info">
                 <h3>${n.titolo}</h3>
                 <p>${n.sottotitolo || ''}</p>
+                <div class="news-date-tag" style="margin-top: 10px; font-size: 0.7rem; color: #d4af37; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8;">
+                    ${dataComunicato}
+                </div>
             </div>
         `;
         

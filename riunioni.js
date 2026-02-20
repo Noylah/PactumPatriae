@@ -1,217 +1,55 @@
 const _supabase = supabase.createClient('https://ljqyjqgjeloceimeiayr.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqcXlqcWdqZWxvY2VpbWVpYXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMjAxNTMsImV4cCI6MjA4Mzc5NjE1M30.dNvhvad9_mR64RqeNZyu4X_GdxSOFz23TuiLt33GXxk');
-
 const TELEGRAM_CHAT_ID = "-1003653282093";
 
 (async function protezioneTotale() {
     const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
-
-    if (sessionError || !session) {
-        window.location.replace('login.html');
-        return;
-    }
-
+    if (sessionError || !session) { window.location.replace('login.html'); return; }
     try {
-        const emailUtente = session.user.email;
-        const usernameDaCercare = emailUtente.split('@')[0];
-
-        const { data: profilo, error: dbError } = await _supabase
-            .from('staff_users')
-            .select('permessi')
-            .eq('username', usernameDaCercare) 
-            .single();
-
-        if (dbError || !profilo) {
-            console.error("Dati mancanti per lo username:", usernameDaCercare);
-            alert("Errore: Il tuo account non è censito nella tabella staff_users.");
-            window.location.replace('login.html');
-            return;
-        }
-
-        const paginaCorrente = window.location.pathname.split('/').pop();
-        const mappePermessi = { 
-            'staff.html': 'C',    
-            'riunioni.html': 'R', 
-            'bilancio.html': 'E',
-            'notizie.html': 'N',
-            'credenziali.html': 'A',
-        };
-        
-        const letteraNecessaria = mappePermessi[paginaCorrente];
-
-        if (letteraNecessaria && !profilo.permessi.includes(letteraNecessaria)) {
-            alert("Accesso negato: non hai i permessi necessari.");
-            window.location.replace('login.html');
-            return;
-        }
-
+        const usernameDaCercare = session.user.email.split('@')[0];
+        const { data: profilo } = await _supabase.from('staff_users').select('permessi').eq('username', usernameDaCercare).single();
+        if (!profilo) { window.location.replace('login.html'); return; }
+        const paginaCorrente = window.location.pathname.split('/').pop() || 'index.html';
+        const mappePermessi = { 'proposte.html': 'P', 'staff.html': 'C', 'riunioni.html': 'R', 'bilancio.html': 'E', 'notizie.html': 'N', 'credenziali.html': 'A', 'gestioneproposte.html': 'G' };
+        if (mappePermessi[paginaCorrente] && !profilo.permessi.includes(mappePermessi[paginaCorrente])) { window.location.replace('staff.html'); return; }
+        sessionStorage.setItem('loggedUser', usernameDaCercare);
+        sessionStorage.setItem('userPermessi', profilo.permessi);
         document.body.style.visibility = "visible";
         document.body.style.opacity = "1";
-
-    } catch (err) {
-        console.error("Errore critico:", err);
-        window.location.replace('login.html');
-    }
+    } catch (err) { window.location.replace('login.html'); }
 })();
 
-async function inviaLog(azione, dettagli = "") {
-    try {
-        const { data: { session } } = await _supabase.auth.getSession();
-        const username = session?.user?.email ? session.user.email.split('@')[0].toUpperCase() : "Sistema/Sconosciuto";
-
-        const messaggioFormattato = `🦅 *Pactum Patriae*\nɴᴜᴏᴠᴏ ʟᴏɢ ꜱɪᴛᴏ\n\n👤 ᴏᴘᴇʀᴀᴛᴏʀᴇ: ${username}\n📝 ᴀᴢɪᴏɴᴇ: ${azione}\n\n📖 ᴅᴇᴛᴛᴀɢʟɪ: ${dettagli}`;
-
-        await _supabase.functions.invoke('send-telegram-messaggio', {
-            body: { messaggio: messaggioFormattato },
-            headers: { Authorization: `Bearer ${session?.access_token}` }
-        });
-    } catch (err) {
-        console.error("Errore log:", err.message);
-    }
+function escapeHTML(text) {
+    if (!text) return "";
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-async function inviaOdGTelegram(data, presidiata, odgRaw) {
-    if (!data || !presidiata || !odgRaw) return;
-
-    const dataObj = new Date(data);
-    const mesi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
-    const dataFormattata = `${dataObj.getDate()} ${mesi[dataObj.getMonth()]} ${dataObj.getFullYear()}`;
-
-    const puntiPuntati = odgRaw.split('\n')
-        .filter(riga => riga.trim() !== "") 
-        .map(riga => `• ${riga.trim()}  `) 
-        .join('\n'); 
-
-    const messaggio = `🦅 *Pactum Patriae*
-ᴏʀᴅɪɴᴇ ᴅᴇʟ ɢɪᴏʀɴᴏ\n
-🏛 *ᴅᴀᴛᴀ:* ${dataFormattata}
-👤 *ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:* ${presidiata}\n
-📝 *ᴘᴜɴᴛɪ ᴅɪꜱᴄᴜꜱꜱɪᴏɴᴇ:*
-${puntiPuntati}`
-
-    try {
-        const { data: responseData, error } = await _supabase.functions.invoke('send-telegram-broadcast', {
-            body: { 
-                messaggio: messaggio, 
-                parse_mode: 'Markdown',  
-                chat_id: TELEGRAM_CHAT_ID 
-            }
-        });
-
-        if (error) throw error;
-
-        alert("Inviato su Telegram!");
-        inviaLog("Riunioni: OdG inviato su Telegram", `Data: ${dataFormattata} | Presieduta da: ${presidiata}`);
-    } catch (err) { 
-        console.error("Errore invio Edge Function:", err); 
-        alert("Errore durante l'invio.");
-    }
-}
-
-
-async function salvaComeOdG() {
-    const dataVal = document.getElementById('dataRiunione').value;
-    const chiVal = document.getElementById('presidiataDa').value;
-    const odgVal = document.getElementById('odgRiunione').value;
-    if (!dataVal || !chiVal || !odgVal) return alert("Compila i campi.");
-
-    const { error } = await _supabase.from('riunioni').insert([{ 
-        data: dataVal, 
-        presidiata_da: chiVal, 
-        odg: odgVal, 
-        presenti: [], 
-        stato: 'odg' 
-    }]);
-
-    if (!error) {
-        inviaLog("Riunioni: Creato OdG", `Data: ${dataVal} | Presieduta da: ${chiVal}`);
-        if(confirm("OdG salvato. Inviare ora su Telegram?")) {
-            await inviaOdGTelegram(dataVal, chiVal, odgVal);
-        }
-        location.reload();
-    } else {
-        inviaLog("Riunioni: Errore creazione OdG", error.message);
-    }
-}
-
-async function convertiInResoconto(id) {
-    const { data: r } = await _supabase.from('riunioni').select('*').eq('id', id).single();
-    document.getElementById('editId').value = r.id;
-    document.getElementById('editData').value = r.data;
-    document.getElementById('editPresidiata').value = r.presidiata_da;
-    renderEditableODG(r.odg);
-    
-    const { data: consiglieri } = await _supabase.from('consiglieri').select('nome');
-    const container = document.getElementById('editListaAppello');
-    container.innerHTML = '';
-    consiglieri.forEach(c => {
-        const lbl = document.createElement('label'); lbl.className = 'pill-checkbox';
-        lbl.innerHTML = `<input type="checkbox" name="editPresenti" value="${c.nome}"><span class="pill-content"><span class="pill-text">${c.nome}</span></span>`;
-        container.appendChild(lbl);
-    });
-
-    const btnSalva = document.querySelector('#editModal .save-btn[onclick*="salvaModificaCompleta"]');
-    if(btnSalva) btnSalva.onclick = () => finalizzaConversione(id);
-
-    document.getElementById('editModal').style.display = 'flex';
-}
-
-async function finalizzaConversione(id) {
-    const data = document.getElementById('editData').value;
-    const presidiata = document.getElementById('editPresidiata').value;
-    const presenti = Array.from(document.querySelectorAll('input[name="editPresenti"]:checked')).map(cb => cb.value);
-    const nuovoOdg = Array.from(document.querySelectorAll('.odg-edit-row')).map(r => {
-        const t = r.querySelector('.odg-text-input').value;
-        const act = r.querySelector('.tag-opt.active');
-        const st = act ? {'A':'APPROVATA','R':'RESPINTA','S':'SOSPESA'}[act.innerText] : '';
-        return st ? `${t} | ${st}` : t;
-    }).join('\n');
-
-    const { error } = await _supabase.from('riunioni').update({ 
-        data, 
-        presidiata_da: presidiata, 
-        odg: nuovoOdg, 
-        presenti, 
-        stato: 'conclusa' 
-    }).eq('id', id);
-    
-    if (!error) {
-        inviaLog("Riunioni: OdG convertito in Resoconto", `Data: ${data} | ID: ${id}`);
-        location.reload();
-    }
-}
-
-function renderEditableODG(odgRaw) {
-    const container = document.getElementById('editOdgContainer');
-    if (!container) return;
-    container.innerHTML = '';
-    const header = document.createElement('div');
-    header.style = "display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;";
-    header.innerHTML = `<span class="tiny-label" style="margin:0;">Punti e Decisioni</span><button type="button" class="save-btn" onclick="aggiungiPuntoODG()" style="width:auto; padding:5px 15px; font-size:0.7rem;">+ AGGIUNGI PUNTO</button>`;
-    container.appendChild(header);
-    const punti = odgRaw.split('\n').filter(p => p.trim() !== "");
-    punti.forEach(p => creaRigaPunto(p));
-}
-
-function creaRigaPunto(contenuto = "") {
-    const container = document.getElementById('editOdgContainer');
-    let [testo, stato] = contenuto.split(' | ');
-    stato = stato || '';
+function creaRigaPuntoGenerica(containerId, contenuto = "", stato = "") {
+    const container = document.getElementById(containerId);
     const div = document.createElement('div');
     div.className = 'odg-edit-row';
-    div.style = "display:flex; align-items:center; gap:10px; margin-bottom:10px; background:rgba(255,255,255,0.02); padding:8px; border-radius:6px; border: 1px solid rgba(255,255,255,0.05);";
+    div.style = "display:flex; align-items:center; gap:8px; margin-bottom:8px; background:rgba(255,255,255,0.03); padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);";
+    
     div.innerHTML = `
-        <input type="text" value="${testo}" class="minimal-input odg-text-input" style="flex:1; margin:0;" placeholder="Descrizione punto...">
-        <div class="tag-selector" style="display:flex; gap:5px;">
+        <input type="text" value="${contenuto}" class="minimal-input odg-text-input" style="flex:1; margin:0; font-size:0.85rem;" placeholder="Descrizione o Proposta...">
+        <button type="button" onclick="promptLink(this)" style="background:none; border:1px solid #d4af37; color:#d4af37; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:0.7rem;">🔗</button>
+        <div class="tag-selector" style="display:flex; gap:3px;">
             <span class="tag-opt ${stato === 'APPROVATA' ? 'active green' : ''}" onclick="setTag(this, 'APPROVATA')">A</span>
             <span class="tag-opt ${stato === 'RESPINTA' ? 'active red' : ''}" onclick="setTag(this, 'RESPINTA')">R</span>
             <span class="tag-opt ${stato === 'SOSPESA' ? 'active yellow' : ''}" onclick="setTag(this, 'SOSPESA')">S</span>
         </div>
-        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:1.2rem; padding:0 5px;">&times;</button>
+        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:1.1rem; margin-left:5px;">&times;</button>
     `;
     container.appendChild(div);
 }
 
-function aggiungiPuntoODG() { creaRigaPunto(""); }
+function promptLink(btn) {
+    const input = btn.parentElement.querySelector('.odg-text-input');
+    const link = prompt("Inserisci l'URL del documento:");
+    if (link) {
+        const testo = input.value || "Documento";
+        input.value = `<a href="${link}">${testo}</a>`;
+    }
+}
 
 function setTag(el, status) {
     const parent = el.parentElement;
@@ -224,44 +62,78 @@ function setTag(el, status) {
     }
 }
 
-async function fetchConsiglieriPerAppello() {
-    const { data } = await _supabase.from('consiglieri').select('nome');
-    const container = document.getElementById('listaAppello');
+function aggiungiPuntoNuovo() { creaRigaPuntoGenerica('nuovoOdgContainer'); }
+
+function compilaOdGRaw(containerId) {
+    return Array.from(document.querySelectorAll(`#${containerId} .odg-edit-row`)).map(r => {
+        const t = r.querySelector('.odg-text-input').value.trim();
+        const act = r.querySelector('.tag-opt.active');
+        const st = act ? {'A':'APPROVATA','R':'RESPINTA','S':'SOSPESA'}[act.innerText] : '';
+        return st ? `${t} | ${st}` : t;
+    }).filter(p => p !== "").join('\n');
+}
+
+async function fetchProposteSuggerite() {
+    const container = document.getElementById('suggerimentiProposte');
     if (!container) return;
-    container.innerHTML = `<div style="width:100%; display:flex; gap:10px; margin-bottom:15px;"><input type="text" id="inputExtraNuovo" class="minimal-input" placeholder="Aggiungi Ex Consigliere..." style="flex:1;"><button type="button" class="save-btn" onclick="aggiungiNomeExtra('listaAppello')" style="width:45px; height:45px; padding:0; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">+</button></div>`;
-    data.forEach(c => {
-        const label = document.createElement('label');
-        label.className = 'pill-checkbox'; 
-        label.innerHTML = `<input type="checkbox" name="presenti" value="${c.nome}"><span class="pill-content"><span class="pill-text">${c.nome}</span></span>`;
-        container.appendChild(label);
+    const { data: proposte } = await _supabase.from('proposte_consiglieri').select('titolo, link_documento').eq('stato', 'In Attesa');
+    container.innerHTML = '';
+    if (!proposte || proposte.length === 0) {
+        container.innerHTML = '<span style="font-size:0.65rem; color:gray; text-transform:uppercase; letter-spacing:1px;">Nessuna proposta pendente</span>';
+        return;
+    }
+    proposte.forEach(p => {
+        const pill = document.createElement('div');
+        pill.className = 'badge-tag yellow';
+        pill.style = "cursor:pointer; padding:4px 10px; font-size:0.65rem; border: 1px solid rgba(241,196,15,0.3);";
+        pill.innerHTML = `+ ${p.titolo}`;
+        pill.onclick = () => creaRigaPuntoGenerica('nuovoOdgContainer', `<a href="${p.link_documento}">${p.titolo}</a>`);
+        container.appendChild(pill);
     });
 }
 
-function aggiungiNomeExtra(targetContainerId) {
-    const inputId = targetContainerId === 'listaAppello' ? 'inputExtraNuovo' : 'inputExtraEdit';
-    const input = document.getElementById(inputId);
-    const nome = input.value.trim();
-    if (!nome) return;
-    const container = document.getElementById(targetContainerId);
-    const label = document.createElement('label');
-    label.className = 'pill-checkbox extra-name';
-    label.innerHTML = `<input type="checkbox" name="${targetContainerId === 'listaAppello' ? 'presenti' : 'editPresenti'}" value="${nome}" checked><span class="pill-content" style="border-color: rgba(255,255,255,0.2);"><span class="pill-text">${nome} (Ex)</span></span>`;
-    container.appendChild(label);
-    input.value = '';
+async function inviaOdGTelegram(data, presidiata, odgRaw) {
+    const dObj = new Date(data);
+    const mesi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+    const dataF = `${dObj.getDate()} ${mesi[dObj.getMonth()]} ${dObj.getFullYear()}`;
+    const puntiPuntati = odgRaw.split('\n').filter(r => r.trim() !== "").map(r => `• ${r.trim()}`).join('\n');
+    const messaggio = `🦅 <b>Pactum Patriae</b>\nᴏʀᴅɪɴᴇ ᴅᴇʟ ɢɪᴏʀɴᴏ\n\n🏛 <b>ᴅᴀᴛᴀ:</b> ${dataF}\n👤 <b>ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:</b> ${escapeHTML(presidiata)}\n\n📝 <b>ᴘᴜɴᴛɪ ᴅɪ ᴅɪꜱᴄᴜꜱꜱɪᴏɴᴇ:</b>\n${puntiPuntati}`;
+    await _supabase.functions.invoke('send-telegram-messaggio', { body: { messaggio, parse_mode: 'HTML', chat_id: TELEGRAM_CHAT_ID } });
+}
+
+async function inviaResocontoTelegram(data, presidiata, odgRaw) {
+    const dObj = new Date(data);
+    const mesi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+    const dataF = `${dObj.getDate()} ${mesi[dObj.getMonth()]} ${dObj.getFullYear()}`;
+    const punti = odgRaw.split('\n').filter(p => p.trim() !== "");
+    let res = "";
+    punti.forEach(p => {
+        let [testo, stato] = p.split(' | ');
+        let emoji = stato === 'APPROVATA' ? '🟢' : stato === 'RESPINTA' ? '🔴' : stato === 'SOSPESA' ? '🟡' : '🔹';
+        res += `• ${emoji} ${testo}${stato ? ` (<b>${stato}</b>)` : ''}\n`;
+    });
+    const messaggio = `🦅 <b>Pactum Patriae</b>\nʀᴇꜱᴏᴄᴏɴᴛᴏ ʀɪᴜɴɪᴏɴᴇ\n\n🏛 <b>ᴅᴀᴛᴀ:</b> ${dataF}\n👤 <b>ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:</b> ${escapeHTML(presidiata)}\n\n📝 <b>ᴇꜱɪᴛᴏ ᴘᴜɴᴛɪ ᴅɪꜱᴄᴜꜱꜱɪ:</b>\n${res}`;
+    await _supabase.functions.invoke('send-telegram-messaggio', { body: { messaggio, parse_mode: 'HTML', chat_id: TELEGRAM_CHAT_ID } });
 }
 
 async function salvaRiunione() {
     const dataVal = document.getElementById('dataRiunione').value;
     const chiVal = document.getElementById('presidiataDa').value;
-    const odgVal = document.getElementById('odgRiunione').value;
+    const odgVal = compilaOdGRaw('nuovoOdgContainer');
     const selezionati = Array.from(document.querySelectorAll('input[name="presenti"]:checked')).map(cb => cb.value);
-    if (!dataVal || !chiVal || !odgVal) return alert("Compila tutti i campi.");
+    if (!dataVal || !chiVal || !odgVal) return alert("Compila i campi obbligatori.");
     const { error } = await _supabase.from('riunioni').insert([{ data: dataVal, presidiata_da: chiVal, odg: odgVal, presenti: selezionati, stato: 'conclusa' }]);
-    if (error) {
-        alert(error.message);
-        inviaLog("Riunioni: Errore salvataggio resoconto", error.message);
-    } else {
-        inviaLog("Riunioni: Nuovo resoconto creato", `Data: ${dataVal} | Presenti: ${selezionati.length}`);
+    if (!error) location.reload();
+}
+
+async function salvaComeOdG() {
+    const dataVal = document.getElementById('dataRiunione').value;
+    const chiVal = document.getElementById('presidiataDa').value;
+    const odgVal = compilaOdGRaw('nuovoOdgContainer');
+    if (!dataVal || !chiVal || !odgVal) return alert("Compila i campi obbligatori.");
+    const { error } = await _supabase.from('riunioni').insert([{ data: dataVal, presidiata_da: chiVal, odg: odgVal, presenti: [], stato: 'odg' }]);
+    if (!error) {
+        if(confirm("Inviare su Telegram?")) await inviaOdGTelegram(dataVal, chiVal, odgVal);
         location.reload();
     }
 }
@@ -269,197 +141,90 @@ async function salvaRiunione() {
 async function fetchRiunioni() {
     const { data: consiglieriAttuali } = await _supabase.from('consiglieri').select('nome');
     const nomiAttuali = consiglieriAttuali ? consiglieriAttuali.map(c => c.nome) : [];
-    const { data: riunioni, error } = await _supabase.from('riunioni').select('*').order('data', { ascending: false });
+    const { data: riunioni } = await _supabase.from('riunioni').select('*').order('data', { ascending: false });
     const tbody = document.getElementById('riunioni-data-body');
-    if (!tbody || error) return;
+    if (!tbody || !riunioni) return;
     tbody.innerHTML = '';
-
     riunioni.forEach(r => {
         const odgPunti = r.odg.split('\n').filter(p => p.trim() !== "");
-        const dataSafe = r.data;
-        const presSafe = r.presidiata_da.replace(/'/g, "\\'");
-        const odgSafe = r.odg.replace(/'/g, "\\'").replace(/\n/g, "\\n");
-
-        const odgHTML = `<ol class="odg-list" style="margin:0; padding-left:20px; color:rgba(255,255,255,0.8);">
-            ${odgPunti.map(p => {
-                let [testo, stato] = p.split(' | ');
-                let tag = stato === 'APPROVATA' ? '<span class="badge-tag green">APPROVATA</span>' : 
-                          stato === 'RESPINTA' ? '<span class="badge-tag red">RESPINTA</span>' : 
-                          stato === 'SOSPESA' ? '<span class="badge-tag yellow">SOSPESA</span>' : '';
-                return `<li style="margin-bottom:8px;">${testo} ${tag}</li>`;
-            }).join('')}
-        </ol>`;
-
-        const trMain = document.createElement('tr');
-        trMain.style.cursor = 'pointer';
-        trMain.onclick = () => toggleRow(`details-${r.id}`);
-        
-        trMain.innerHTML = `
-            <td><span style="color:${r.stato === 'odg' ? '#0088cc' : '#d4af37'}; margin-right:8px;">${r.stato === 'odg' ? '●' : '✧'}</span>${r.data}</td>
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = () => toggleRow(`details-${r.id}`);
+        tr.innerHTML = `
+            <td><span style="color:${r.stato === 'odg' ? '#0088cc' : '#d4af37'}; margin-right:5px;">●</span>${r.data}</td>
             <td>${r.presidiata_da}</td>
-            <td style="text-align: center;">${r.stato === 'odg' ? '<span style="color:#0088cc; font-size:0.7rem; font-weight:bold;">ODG</span>' : ''}</td>
-            <td style="text-align: center; font-size: 0.75rem; opacity: 0.5; font-style: italic;">Dettagli</td>
-            <td style="text-align: right; white-space: nowrap;">
-                <button class="btn-action-dash edit" style="background:#0088cc; color:white; border:none;" onclick="event.stopPropagation(); ${r.stato === 'odg' ? `inviaOdGTelegram('${dataSafe}', '${presSafe}', '${odgSafe}')` : `inviaResocontoTelegram('${dataSafe}', '${presSafe}', '${odgSafe}')`}">✈️</button>
-                ${r.stato === 'odg' ? `<button class="btn-action-dash save" onclick="event.stopPropagation(); convertiInResoconto(${r.id})">CONVERTI</button>` : `<button class="btn-action-dash edit" onclick="event.stopPropagation(); modificaRiunione(${r.id})">MODIFICA</button>`}
-                <button class="btn-action-dash delete" onclick="event.stopPropagation(); eliminaRiunione(${r.id}, '${dataSafe}')">X</button>
-            </td>
-        `;
-
-        const trDetails = document.createElement('tr');
-        trDetails.id = `details-${r.id}`;
-        trDetails.className = 'row-details';
-        trDetails.style.display = 'none';
-        trDetails.innerHTML = `
+            <td style="text-align: center;">${r.stato === 'odg' ? '<span class="badge-tag blue">ODG</span>' : ''}</td>
+            <td style="text-align: center; font-size:0.7rem; opacity:0.6;">Dettagli</td>
+            <td style="text-align: right;">
+                <button class="btn-action-dash edit" style="background:#0088cc; color:white; border:none;" onclick="event.stopPropagation(); ${r.stato === 'odg' ? `inviaOdGTelegram('${r.data}','${r.presidiata_da}','${r.odg.replace(/\n/g,'\\n')}')` : `inviaResocontoTelegram('${r.data}','${r.presidiata_da}','${r.odg.replace(/\n/g,'\\n')}')`}">✈️</button>
+                <button class="btn-action-dash delete" onclick="event.stopPropagation(); eliminaRiunione(${r.id})">X</button>
+            </td>`;
+        
+        const details = document.createElement('tr');
+        details.id = `details-${r.id}`;
+        details.className = 'row-details';
+        details.style.display = 'none';
+        details.innerHTML = `
             <td colspan="5">
-                <div style="padding:20px; border-left:2px solid #d4af37; margin:10px 0; display:grid; grid-template-columns:1fr 1fr; gap:40px; background:rgba(0,0,0,0.2);">
-                    <div><span style="color:#d4af37; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:15px;">Punti Discussione</span>${odgHTML}</div>
-                    <div><span style="color:#d4af37; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:15px;">Presenti</span><div style="display:flex; flex-wrap:wrap; gap:8px;">${r.presenti.map(n => nomiAttuali.includes(n) ? `<span class="badge-status active">${n}</span>` : `<span class="badge-status ex">${n} (Ex)</span>`).join(' ')}</div></div>
+                <div style="padding:15px; border-left:2px solid #d4af37; background:rgba(0,0,0,0.2); margin:5px 0;">
+                    <div style="margin-bottom:10px;"><strong style="color:#d4af37; font-size:0.7rem;">PUNTI:</strong><br>
+                        ${odgPunti.map(p => {
+                            let [t, s] = p.split(' | ');
+                            let tag = s ? ` <span class="badge-tag ${s === 'APPROVATA' ? 'green' : s === 'RESPINTA' ? 'red' : 'yellow'}">${s}</span>` : '';
+                            return `<div style="margin:4px 0; font-size:0.8rem;">• ${t}${tag}</div>`;
+                        }).join('')}
+                    </div>
+                    <div><strong style="color:#d4af37; font-size:0.7rem;">PRESENTI:</strong><br>
+                        <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">
+                            ${r.presenti.map(n => `<span class="badge-status active" style="font-size:0.65rem;">${n}</span>`).join('')}
+                        </div>
+                    </div>
                 </div>
-            </td>
-        `;
-        tbody.appendChild(trMain); tbody.appendChild(trDetails);
+            </td>`;
+        tbody.appendChild(tr); tbody.appendChild(details);
     });
 }
 
-async function modificaRiunione(id) {
-    const { data: riunione } = await _supabase.from('riunioni').select('*').eq('id', id).single();
-    document.getElementById('editId').value = id;
-    document.getElementById('editData').value = riunione.data;
-    document.getElementById('editPresidiata').value = riunione.presidiata_da;
-    renderEditableODG(riunione.odg);
-    const { data: consiglieri } = await _supabase.from('consiglieri').select('nome');
-    const container = document.getElementById('editListaAppello');
-    container.innerHTML = `<div style="width:100%; display:flex; gap:10px; margin-bottom:15px;"><input type="text" id="inputExtraEdit" class="minimal-input" placeholder="Aggiungi Ex..." style="flex:1;"><button type="button" class="save-btn" onclick="aggiungiNomeExtra('editListaAppello')" style="width:45px; height:45px; padding:0; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">+</button></div>`;
-    const nomiDb = consiglieri.map(c => c.nome);
-    nomiDb.forEach(n => {
-        const lbl = document.createElement('label'); lbl.className = 'pill-checkbox';
-        lbl.innerHTML = `<input type="checkbox" name="editPresenti" value="${n}" ${riunione.presenti.includes(n) ? 'checked' : ''}><span class="pill-content"><span class="pill-text">${n}</span></span>`;
+function toggleRow(id) {
+    const r = document.getElementById(id);
+    const isVisible = r.style.display === 'table-row';
+    document.querySelectorAll('.row-details').forEach(x => x.style.display = 'none');
+    r.style.display = isVisible ? 'none' : 'table-row';
+}
+
+function toggleRiunioneForm() {
+    const f = document.getElementById('riunioneFormContainer');
+    f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    if(f.style.display === 'block') {
+        fetchConsiglieriPerAppello();
+        fetchProposteSuggerite();
+        document.getElementById('nuovoOdgContainer').innerHTML = '';
+        aggiungiPuntoNuovo();
+    }
+}
+
+async function fetchConsiglieriPerAppello() {
+    const { data } = await _supabase.from('consiglieri').select('nome');
+    const container = document.getElementById('listaAppello');
+    if (!container) return;
+    container.innerHTML = '';
+    data.forEach(c => {
+        const lbl = document.createElement('label');
+        lbl.className = 'pill-checkbox';
+        lbl.innerHTML = `
+            <input type="checkbox" name="presenti" value="${c.nome}">
+            <span class="pill-content">
+                <span class="pill-text" style="color: white !important;">${c.nome}</span>
+            </span>`;
         container.appendChild(lbl);
     });
-    riunione.presenti.forEach(n => {
-        if(!nomiDb.includes(n)) {
-            const lbl = document.createElement('label'); lbl.className = 'pill-checkbox';
-            lbl.innerHTML = `<input type="checkbox" name="editPresenti" value="${n}" checked><span class="pill-content" style="border-color:rgba(255,255,255,0.2);"><span class="pill-text">${n} (Ex)</span></span>`;
-            container.appendChild(lbl);
-        }
-    });
-    document.getElementById('editModal').style.display = 'flex';
 }
 
-async function salvaModificaCompleta() {
-    const id = document.getElementById('editId').value;
-    const data = document.getElementById('editData').value;
-    const presidiata = document.getElementById('editPresidiata').value;
-    const presenti = Array.from(document.querySelectorAll('input[name="editPresenti"]:checked')).map(cb => cb.value);
-    const nuovoOdg = Array.from(document.querySelectorAll('.odg-edit-row')).map(r => {
-        const t = r.querySelector('.odg-text-input').value;
-        const act = r.querySelector('.tag-opt.active');
-        const st = act ? {'A':'APPROVATA','R':'RESPINTA','S':'SOSPESA'}[act.innerText] : '';
-        return st ? `${t} | ${st}` : t;
-    }).join('\n');
-    const { error } = await _supabase.from('riunioni').update({ data, presidiata_da: presidiata, odg: nuovoOdg, presenti }).eq('id', id);
-    if(!error) {
-        inviaLog("Riunioni: Verbale modificato", `Data: ${data} | ID: ${id}`);
-        chiudiModal(); 
+async function eliminaRiunione(id) {
+    if (confirm("Eliminare definitivamente?")) {
+        await _supabase.from('riunioni').delete().eq('id', id);
         fetchRiunioni();
     }
 }
 
-async function eliminaRiunione(id, dataRiunione) {
-    if (confirm("Eliminare questa riunione?")) { 
-        const { error } = await _supabase.from('riunioni').delete().eq('id', id); 
-        if(!error) {
-            inviaLog("Riunioni: Verbale eliminato", `Data: ${dataRiunione} | ID: ${id}`);
-            fetchRiunioni(); 
-        }
-    }
-}
-
-function chiudiModal() { document.getElementById('editModal').style.display = 'none'; document.body.style.overflow = 'auto'; }
-
-function toggleRow(id) { 
-    const r = document.getElementById(id); 
-    const vis = r.style.display === 'table-row'; 
-    document.querySelectorAll('.row-details').forEach(x => x.style.display = 'none'); 
-    r.style.display = vis ? 'none' : 'table-row'; 
-}
-
-function toggleRiunioneForm() { 
-    const f = document.getElementById('riunioneFormContainer'); 
-    f.style.display = (f.style.display === 'none') ? 'block' : 'none'; 
-    if(f.style.display === 'block') fetchConsiglieriPerAppello(); 
-}
-
-async function inviaResocontoTelegram(data, presidiata, odgRaw) {
-    if (!data || !presidiata || !odgRaw) return;
-
-    const mesi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
-    const dObj = new Date(data);
-    const dataFormattata = `${dObj.getDate()} ${mesi[dObj.getMonth()]} ${dObj.getFullYear()}`;
-    const punti = odgRaw.split('\n').filter(p => p.trim() !== "");
-    let puntiFormattati = "";
-
-    punti.forEach(p => {
-        let [testo, stato] = p.split(' | ');
-        let emoji = stato === 'APPROVATA' ? '🟢' : stato === 'RESPINTA' ? '🔴' : stato === 'SOSPESA' ? '🟡' : '🔹';
-        puntiFormattati += `• ${emoji} ${testo}${stato ? ` (*${stato}*)` : ''}\n`;
-    });
-
-    const messaggio = 
-    `🦅 *Pactum Patriae*
-ʀᴇꜱᴏᴄᴏɴᴛᴏ ʀɪᴜɴɪᴏɴᴇ ᴀꜱꜱᴇᴍʙʟᴇᴀ
-    
-🏛 *ᴅᴀᴛᴀ:* ${dataFormattata}
-👤 *ᴘʀᴇꜱɪᴇᴅᴜᴛᴀ ᴅᴀ:* ${presidiata}
-    
-📝 *ᴇꜱɪᴛᴏ ᴘᴜɴᴛɪ ᴅɪꜱᴄᴜꜱꜱɪ:*
-${puntiFormattati}`;
-
-    try {
-        const { data: responseData, error } = await _supabase.functions.invoke('send-telegram-broadcast', {
-            body: { 
-                messaggio: messaggio, 
-                parse_mode: 'Markdown',
-                chat_id: TELEGRAM_CHAT_ID 
-            }
-        });
-
-        if (error) throw error;
-
-        alert("Resoconto inviato su Telegram!");
-        inviaLog("Riunioni: Resoconto inviato su Telegram", `Data: ${dataFormattata}`);
-    } catch (err) { 
-        console.error("Errore invio Edge Function:", err); 
-        alert("Errore durante l'invio del resoconto.");
-    }
-}
-
-function logout() {
-    inviaLog("Sistema: Logout effettuato");
-    _supabase.auth.signOut();
-    sessionStorage.clear();
-    window.location.replace('login.html');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    fetchRiunioni();
-    gestisciAccessoPagina('R'); 
-});
-
-function gestisciAccessoPagina(letteraNecessaria) {
-    const permessi = sessionStorage.getItem('userPermessi') || "";
-    const sessionUser = sessionStorage.getItem('loggedUser') || "";
-    if (sessionUser === 'Zicli') return;
-    if (!permessi.includes(letteraNecessaria)) {
-        inviaLog("Sicurezza: Tentativo accesso negato", "Pagina Riunioni");
-        alert("Accesso non autorizzato.");
-        window.location.replace('staff.html');
-        return;
-    }
-    const mappe = { 'staff.html': 'C', 'riunioni.html': 'R', 'bilancio.html': 'E', 'credenziali.html': 'A' };
-    document.querySelectorAll('.panel-link').forEach(link => {
-        const href = link.getAttribute('href').split('/').pop();
-        if (mappe[href] && !permessi.includes(mappe[href])) link.style.display = 'none';
-    });
-}
+document.addEventListener('DOMContentLoaded', fetchRiunioni);
