@@ -73,6 +73,12 @@ async function handleLogin(event) {
             window.location.replace('notizie.html');
         } else if (p.includes('A')) {
             window.location.replace('credenziali.html');
+        } else if (p.includes('N')) {
+            window.location.replace('notizie.html');
+        } else if (p.includes('P')) {
+            window.location.replace('proposte.html');
+        } else if (p.includes('G')) {
+            window.location.replace('gestioneproposte.html');
         } else {
             errorDisplay.innerText = "Account senza permessi di accesso.";
             errorDisplay.style.display = "block";
