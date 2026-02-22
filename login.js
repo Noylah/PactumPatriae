@@ -4,7 +4,7 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function inviaLog(messaggio, utente = "Sistema", descrizione = "") {
     try {
-        await _supabase.functions.invoke('send-telegram-log', {
+        await _supabase.functions.invoke('send-telegram-messaggio', {
             body: { messaggio, utente, descrizione }
         });
     } catch (err) {
